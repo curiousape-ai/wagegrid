@@ -1,0 +1,34 @@
+{
+  "period": "May 2025",
+  "survey": "OEWS",
+  "area_type": "Metropolitan Statistical Area",
+  "metros": [
+    {
+      "area_code": "12420",
+      "bls_area_code": "0012420",
+      "slug": "austin-round-rock-san-marcos-tx",
+      "name": "Austin-Round Rock-San Marcos, TX",
+      "short_name": "Austin",
+      "state": "TX",
+      "aliases": ["austin-tx", "austin"]
+    },
+    {
+      "area_code": "16980",
+      "bls_area_code": "0016980",
+      "slug": "chicago-naperville-elgin-il-in",
+      "name": "Chicago-Naperville-Elgin, IL-IN",
+      "short_name": "Chicago",
+      "state": "IL-IN",
+      "aliases": ["chicago-il", "chicago"]
+    },
+    {
+      "area_code": "42660",
+      "bls_area_code": "0042660",
+      "slug": "seattle-tacoma-bellevue-wa",
+      "name": "Seattle-Tacoma-Bellevue, WA",
+      "short_name": "Seattle",
+      "state": "WA",
+      "aliases": ["seattle-wa", "seattle"]
+    }
+  ]
+}

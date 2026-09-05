@@ -1,0 +1,182 @@
+{
+  "period": "May 2025",
+  "classification": "2018 SOC",
+  "occupations": [
+    {
+      "soc": "15-1252",
+      "slug": "software-developers",
+      "title": "Software Developers",
+      "short_title": "Software developers",
+      "aliases": ["software-developer", "software-engineers"]
+    },
+    {
+      "soc": "29-1141",
+      "slug": "registered-nurses",
+      "title": "Registered Nurses",
+      "short_title": "Registered nurses",
+      "aliases": ["rns", "rn"]
+    },
+    {
+      "soc": "13-2011",
+      "slug": "accountants-and-auditors",
+      "title": "Accountants and Auditors",
+      "short_title": "Accountants",
+      "aliases": ["accountants"]
+    },
+    {
+      "soc": "47-2111",
+      "slug": "electricians",
+      "title": "Electricians",
+      "short_title": "Electricians",
+      "aliases": []
+    },
+    {
+      "soc": "47-2152",
+      "slug": "plumbers-pipefitters-and-steamfitters",
+      "title": "Plumbers, Pipefitters, and Steamfitters",
+      "short_title": "Plumbers",
+      "aliases": ["plumbers"]
+    },
+    {
+      "soc": "53-3032",
+      "slug": "heavy-and-tractor-trailer-truck-drivers",
+      "title": "Heavy and Tractor-Trailer Truck Drivers",
+      "short_title": "Truck drivers",
+      "aliases": ["truck-drivers"]
+    },
+    {
+      "soc": "41-1011",
+      "slug": "retail-supervisors",
+      "title": "First-Line Supervisors of Retail Sales Workers",
+      "short_title": "Retail supervisors",
+      "aliases": ["first-line-supervisors-of-retail-sales-workers"]
+    },
+    {
+      "soc": "11-2021",
+      "slug": "marketing-managers",
+      "title": "Marketing Managers",
+      "short_title": "Marketing managers",
+      "aliases": []
+    },
+    {
+      "soc": "15-2051",
+      "slug": "data-scientists",
+      "title": "Data Scientists",
+      "short_title": "Data scientists",
+      "aliases": []
+    },
+    {
+      "soc": "17-2051",
+      "slug": "civil-engineers",
+      "title": "Civil Engineers",
+      "short_title": "Civil engineers",
+      "aliases": []
+    },
+    {
+      "soc": "25-2021",
+      "slug": "elementary-school-teachers",
+      "title": "Elementary School Teachers, Except Special Education",
+      "short_title": "Elementary teachers",
+      "aliases": ["elementary-teachers", "teachers"],
+      "annual_only": true
+    },
+    {
+      "soc": "33-3051",
+      "slug": "police-and-sheriffs-patrol-officers",
+      "title": "Police and Sheriff's Patrol Officers",
+      "short_title": "Police officers",
+      "aliases": ["police", "police-officers"]
+    },
+    {
+      "soc": "35-1011",
+      "slug": "chefs-and-head-cooks",
+      "title": "Chefs and Head Cooks",
+      "short_title": "Chefs",
+      "aliases": ["chefs"]
+    },
+    {
+      "soc": "35-3011",
+      "slug": "bartenders",
+      "title": "Bartenders",
+      "short_title": "Bartenders",
+      "aliases": []
+    },
+    {
+      "soc": "47-2061",
+      "slug": "construction-laborers",
+      "title": "Construction Laborers",
+      "short_title": "Construction laborers",
+      "aliases": []
+    },
+    {
+      "soc": "49-9021",
+      "slug": "hvac-mechanics-and-installers",
+      "title": "Heating, Air Conditioning, and Refrigeration Mechanics and Installers",
+      "short_title": "HVAC technicians",
+      "aliases": ["hvac"]
+    },
+    {
+      "soc": "29-1292",
+      "slug": "dental-hygienists",
+      "title": "Dental Hygienists",
+      "short_title": "Dental hygienists",
+      "aliases": []
+    },
+    {
+      "soc": "29-1123",
+      "slug": "physical-therapists",
+      "title": "Physical Therapists",
+      "short_title": "Physical therapists",
+      "aliases": ["pts"]
+    },
+    {
+      "soc": "15-1254",
+      "slug": "web-developers",
+      "title": "Web Developers",
+      "short_title": "Web developers",
+      "aliases": []
+    },
+    {
+      "soc": "13-2051",
+      "slug": "financial-and-investment-analysts",
+      "title": "Financial and Investment Analysts",
+      "short_title": "Financial analysts",
+      "aliases": ["financial-analysts"]
+    },
+    {
+      "soc": "13-1111",
+      "slug": "management-analysts",
+      "title": "Management Analysts",
+      "short_title": "Management analysts",
+      "aliases": []
+    },
+    {
+      "soc": "27-1024",
+      "slug": "graphic-designers",
+      "title": "Graphic Designers",
+      "short_title": "Graphic designers",
+      "aliases": []
+    },
+    {
+      "soc": "21-1021",
+      "slug": "child-family-and-school-social-workers",
+      "title": "Child, Family, and School Social Workers",
+      "short_title": "Social workers",
+      "aliases": ["social-workers"]
+    },
+    {
+      "soc": "47-2031",
+      "slug": "carpenters",
+      "title": "Carpenters",
+      "short_title": "Carpenters",
+      "aliases": []
+    },
+    {
+      "soc": "31-9092",
+      "slug": "medical-assistants",
+      "title": "Medical Assistants",
+      "short_title": "Medical assistants",
+      "aliases": []
+    }
+  ]
+}
