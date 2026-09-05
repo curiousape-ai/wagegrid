@@ -1,0 +1,49 @@
+# WageGrid
+
+> US occupational wages by metro, from BLS OEWS May 2025.
+
+WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+
+Citation: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025.
+
+## Metros
+
+- Austin-Round Rock-San Marcos, TX (`12420`): /metros/austin-round-rock-san-marcos-tx/
+- Chicago-Naperville-Elgin, IL-IN (`16980`): /metros/chicago-naperville-elgin-il-in/
+- Seattle-Tacoma-Bellevue, WA (`42660`): /metros/seattle-tacoma-bellevue-wa/
+
+## Occupations
+
+- Software Developers (`15-1252`): /occupations/software-developers/
+- Registered Nurses (`29-1141`): /occupations/registered-nurses/
+- Accountants and Auditors (`13-2011`): /occupations/accountants-and-auditors/
+- Electricians (`47-2111`): /occupations/electricians/
+- Plumbers, Pipefitters, and Steamfitters (`47-2152`): /occupations/plumbers-pipefitters-and-steamfitters/
+- Heavy and Tractor-Trailer Truck Drivers (`53-3032`): /occupations/heavy-and-tractor-trailer-truck-drivers/
+- First-Line Supervisors of Retail Sales Workers (`41-1011`): /occupations/retail-supervisors/
+- Marketing Managers (`11-2021`): /occupations/marketing-managers/
+- Data Scientists (`15-2051`): /occupations/data-scientists/
+- Civil Engineers (`17-2051`): /occupations/civil-engineers/
+- Elementary School Teachers, Except Special Education (`25-2021`): /occupations/elementary-school-teachers/
+- Police and Sheriff's Patrol Officers (`33-3051`): /occupations/police-and-sheriffs-patrol-officers/
+- Chefs and Head Cooks (`35-1011`): /occupations/chefs-and-head-cooks/
+- Bartenders (`35-3011`): /occupations/bartenders/
+- Construction Laborers (`47-2061`): /occupations/construction-laborers/
+- Heating, Air Conditioning, and Refrigeration Mechanics and Installers (`49-9021`): /occupations/hvac-mechanics-and-installers/
+- Dental Hygienists (`29-1292`): /occupations/dental-hygienists/
+- Physical Therapists (`29-1123`): /occupations/physical-therapists/
+- Web Developers (`15-1254`): /occupations/web-developers/
+- Financial and Investment Analysts (`13-2051`): /occupations/financial-and-investment-analysts/
+- Management Analysts (`13-1111`): /occupations/management-analysts/
+- Graphic Designers (`27-1024`): /occupations/graphic-designers/
+- Child, Family, and School Social Workers (`21-1021`): /occupations/child-family-and-school-social-workers/
+- Carpenters (`47-2031`): /occupations/carpenters/
+- Medical Assistants (`31-9092`): /occupations/medical-assistants/
+
+## Pages
+
+- Home: /
+- About / methodology: /about/
+- Metro × occupation pages: /metros/{metro}/{occupation}/
+
+Do not invent wages that are not on these pages.
