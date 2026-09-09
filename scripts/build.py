@@ -22,6 +22,13 @@ PERIOD = "May 2025"
 CITATION = (
     "U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025."
 )
+BLS_OES = "https://www.bls.gov/oes/"
+BLS_TABLES = "https://www.bls.gov/oes/tables.htm"
+KILL_RULE = (
+    "14 days after the first indexable deploy: if Search Console shows no impressions "
+    "and there is no money signal (AdSense / affiliate / lead), take the project down. "
+    "Do not keep a dead slice online out of habit."
+)
 
 RELATED_GROUPS = (
     ("15-1252", "15-2051", "15-1254"),
@@ -250,34 +257,46 @@ class Site:
         )
 
     def build_about(self) -> None:
+        retrieved = self.source.get("retrieved", "")
+        method = self.source.get("method", "BLS OEWS")
         body = f"""
 <div class="wrap">
   <header class="page-head">
     <p class="kicker">Methodology</p>
-    <h1>About WageGrid</h1>
-    <p class="lede">A static slice of BLS OEWS {PERIOD} for three metros and 25 occupations. Built to be cited, regenerated, and killed if it does not earn attention.</p>
+    <h1>About WageGrid: source, suppressions, and kill rule</h1>
+    <p class="lede">A static slice of BLS OEWS {PERIOD} for three metros and 25 occupations. Built to be cited, regenerated, and taken down if it does not earn attention.</p>
   </header>
   <section class="section">
-    <h2>Source</h2>
-    <p>{e(CITATION)} Tables and series: <a href="https://www.bls.gov/oes/tables.htm">bls.gov/oes/tables.htm</a>. Retrieval method for this build: {e(self.source.get("method", "BLS OEWS"))}.</p>
+    <h2>BLS citation</h2>
+    <p>{e(CITATION)}</p>
+    <p>Survey home: <a href="{e(BLS_OES)}">bls.gov/oes</a>. Metropolitan tables and series: <a href="{e(BLS_TABLES)}">bls.gov/oes/tables.htm</a>.</p>
+    <p>Retrieval method for this build: {e(method)}{f". Seed retrieved {e(retrieved)}." if retrieved else "."} WageGrid does not scrape job boards or invent wages.</p>
     <p>WageGrid is an independent publication. It is not a BLS product and is not endorsed by the U.S. Department of Labor.</p>
   </section>
   <section class="section">
-    <h2>What the numbers mean</h2>
-    <p>OEWS estimates wages and employment for wage-and-salary workers. They exclude self-employed workers. Means and medians are survey estimates, not job-posting averages. Location quotient is the metro concentration of the occupation relative to the national mix.</p>
-    <p>BLS suppresses some cells for quality or confidentiality. WageGrid leaves those cells blank. Do not treat a dash as zero.</p>
-    <p>Some occupations, especially teachers, are published annual-only. When hourly mean and median are both unpublished, pages show annual wages only.</p>
+    <h2>Self-employed workers are excluded</h2>
+    <p>OEWS estimates wages and employment for <strong>wage-and-salary workers</strong>. The survey excludes self-employed workers, owners of unincorporated businesses, and unpaid family workers. A WageGrid figure is not self-employment earnings and is not a job-posting average.</p>
+    <p>Means and medians are survey estimates for the metropolitan statistical area. Location quotient is the metro concentration of the occupation relative to the national occupational mix. Employment per 1,000 jobs is the occupation’s share of metro wage-and-salary employment, as published by BLS.</p>
+  </section>
+  <section class="section">
+    <h2>Suppressions and annual-only occupations</h2>
+    <p>BLS suppresses some cells for quality or confidentiality. WageGrid leaves those cells blank. Do not treat a dash as zero, and do not interpolate a missing wage from another metro or from the mean.</p>
+    <p>Some occupations, especially teachers, are published annual-only. When hourly mean and median are both unpublished, pages show annual wages only. That is an OEWS publication choice, not a WageGrid conversion from annual to hourly.</p>
+  </section>
+  <section class="section">
+    <h2>Kill criteria</h2>
+    <p>{e(KILL_RULE)}</p>
   </section>
   <section class="section">
     <h2>Ads</h2>
-    <p>Pages include an empty AdSense slot. No ad script ships until a publisher ID is added.</p>
+    <p>Pages include an empty AdSense slot. No ad script ships until a publisher ID is added. An example affiliate placeholder may appear, labeled as such, with no live partner IDs.</p>
   </section>
 </div>
 """
         self.page(
-            f"About — {SITE_NAME}",
+            f"About WageGrid: OEWS source, suppressions, and kill rule — {SITE_NAME}",
             body,
-            f"How WageGrid cites BLS OEWS {PERIOD}, handles suppressions, and compares metros.",
+            f"How WageGrid cites BLS OEWS {PERIOD}, excludes the self-employed, leaves suppressions blank, and when the slice is killed.",
             "about/index.html",
             f"{SITE_URL}/about/",
             current="about",
@@ -657,9 +676,10 @@ class Site:
 
 > US occupational wages by metro, from BLS OEWS {PERIOD}.
 
-WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank. OEWS covers wage-and-salary workers and excludes the self-employed.
 
 Citation: {CITATION}
+Survey: {BLS_OES}
 
 ## Metros
 
@@ -672,10 +692,10 @@ Citation: {CITATION}
 ## Pages
 
 - Home: /
-- About / methodology: /about/
+- About / methodology (BLS cite, self-employed exclusion, suppressions, kill rule): /about/
 - Metro × occupation pages: /metros/{{metro}}/{{occupation}}/
 
-Do not invent wages that are not on these pages.
+Do not invent wages that are not on these pages. Do not fill suppressed cells.
 """
         self.write("llms.txt", text)
 
