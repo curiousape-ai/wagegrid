@@ -31,15 +31,13 @@ KILL_RULE = (
 )
 
 RELATED_GROUPS = (
-    ("15-1252", "15-2051", "15-1254"),
+    ("15-1252", "15-2051", "15-1254", "27-1024"),
     ("29-1141", "29-1292", "29-1123", "31-9092"),
-    ("47-2111", "47-2152", "49-9021", "47-2031", "47-2061"),
+    ("47-2111", "47-2152", "49-9021", "47-2031", "47-2061", "17-2051"),
     ("13-2011", "13-2051", "13-1111", "11-2021"),
     ("35-1011", "35-3011", "41-1011"),
     ("33-3051", "21-1021", "25-2021"),
-    ("17-2051",),
-    ("53-3032",),
-    ("27-1024",),
+    ("53-3032", "47-2061", "41-1011"),
 )
 
 
@@ -401,10 +399,30 @@ class Site:
     def related_occs(self, occ: dict) -> list[dict]:
         group = next((g for g in RELATED_GROUPS if occ["soc"] in g), ())
         others = [code for code in group if code != occ["soc"]]
-        if not others:
-            others = [o["soc"] for o in self.occupations if o["soc"] != occ["soc"]][:4]
         found = [o for o in self.occupations if o["soc"] in others]
+        if len(found) < 2:
+            extra = [o for o in self.occupations if o["soc"] != occ["soc"] and o not in found]
+            found.extend(extra[: max(0, 3 - len(found))])
         return found[:4]
+
+    def other_occs_in_metro(self, metro: dict, occ: dict, related: list[dict]) -> str:
+        skip = {occ["slug"], *(o["slug"] for o in related)}
+        items = []
+        for other in self.occupations:
+            if other["slug"] in skip:
+                continue
+            obs = self.row(metro, other)
+            href = f"/metros/{metro['slug']}/{other['slug']}/"
+            items.append(
+                f'<li><a href="{e(href)}">{e(other["short_title"])}</a>'
+                f'<span class="soc">{money_year(obs.get("annual_median"))}</span></li>'
+            )
+        if not items:
+            return ""
+        return (
+            f'<h3 class="subhead">More occupations in {e(metro["short_name"])}</h3>'
+            f'<ul class="occ-list">{"".join(items)}</ul>'
+        )
 
     def write(self, rel: str, content: str) -> None:
         path = DIST / rel
@@ -777,9 +795,10 @@ class Site:
 
     def build_occupation(self, occ: dict) -> None:
         table, winner, scored = self.occ_compare_table(occ)
+        related_occs = self.related_occs(occ)
         related = "".join(
-            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(o["soc"])}</p></a></li>'
-            for o in self.related_occs(occ)
+            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>Austin vs Chicago vs Seattle</p></a></li>'
+            for o in related_occs
         )
         crumbs, crumb_ld = self.crumbs(
             [("/", "Home"), ("/occupations/", "Occupations"), (f"/occupations/{occ['slug']}/", occ["short_title"])]
@@ -878,15 +897,27 @@ class Site:
                 </tr>"""
             )
         hourly_head = '<th class="num">Hourly median</th>' if not only_annual else ""
+        related_occs = self.related_occs(occ)
         related = "".join(
-            f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>In {e(metro["short_name"])}</p></a></li>'
-            for o in self.related_occs(occ)
+            f'''<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/">
+              <h3>{e(o["short_title"])}</h3>
+              <p class="stat-label">Annual median in {e(metro["short_name"])}</p>
+              <p class="stat-value stat-value--card">{money_year(self.row(metro, o).get("annual_median"))}</p>
+              <p>Employment {count(self.row(metro, o).get("employment"))}</p>
+            </a></li>'''
+            for o in related_occs
         )
         other_metros = "".join(
-            f'<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(occ["short_title"])}</p></a></li>'
+            f'''<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/">
+              <h3>{e(m["short_name"])}</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">{money_year(self.row(m, occ).get("annual_median"))}</p>
+              <p>vs {e(metro["short_name"])}: {signed_year_delta(obs.get("annual_median"), self.row(m, occ).get("annual_median"))}</p>
+            </a></li>'''
             for m in self.metros
             if m["slug"] != metro["slug"]
         )
+        more_occs = self.other_occs_in_metro(metro, occ, related_occs)
         teacher_note = (
             f"<p>{e(occ['title'])} is shown annual-only because OEWS did not publish hourly wages for this metro × occupation (or the occupation is typically annual-only). WageGrid does not convert annual pay to an hourly rate.</p>"
             if only_annual
@@ -932,6 +963,7 @@ class Site:
   <section class="section">
     <h2>Related occupations in {e(metro['short_name'])}</h2>
     <ul class="related">{related}</ul>
+    {more_occs}
     <p><a href="/metros/{e(metro['slug'])}/">All occupations in {e(metro['short_name'])}</a> · <a href="/occupations/{e(occ['slug'])}/">All metros for {e(occ['short_title'])}</a></p>
   </section>
   {faq_section(faqs)}

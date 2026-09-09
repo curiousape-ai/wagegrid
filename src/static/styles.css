@@ -367,9 +367,10 @@ th.num {
   max-width: 40rem;
 }
 
-.faq details {
-  border-bottom: 1px solid var(--rule);
-  padding: 0.55rem 0;
+.subhead {
+  margin: 1.4rem 0 0.6rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
 }
 
 .faq summary {
