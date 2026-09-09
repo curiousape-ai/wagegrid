@@ -229,8 +229,8 @@ class Site:
 <div class="wrap">
   <header class="hero">
     <p class="kicker">BLS OEWS · {PERIOD}</p>
-    <h1>US occupational wages, compared by metro.</h1>
-    <p class="lede">WageGrid publishes official Occupational Employment and Wage Statistics for Austin, Chicago, and Seattle across 25 occupations. No invented wages. Suppressed BLS cells stay blank.</p>
+    <h1>Austin, Chicago, and Seattle occupational wages.</h1>
+    <p class="lede">WageGrid publishes official Occupational Employment and Wage Statistics for 25 occupations in three metros. No invented wages. Suppressed BLS cells stay blank. OEWS covers wage-and-salary workers and excludes the self-employed.</p>
   </header>
   <section class="section">
     <h2>Metros</h2>
@@ -248,9 +248,9 @@ class Site:
 </div>
 """
         self.page(
-            f"{SITE_NAME} — occupational wages by metro",
+            f"{SITE_NAME} — Austin, Chicago, Seattle occupational wages (OEWS {PERIOD})",
             body,
-            f"Official BLS OEWS {PERIOD} wages for 25 occupations in Austin, Chicago, and Seattle.",
+            f"Official BLS OEWS {PERIOD} wages for 25 occupations in Austin, Chicago, and Seattle. Wage-and-salary workers only; suppressed cells stay blank.",
             "index.html",
             f"{SITE_URL}/",
             current="home",
@@ -316,16 +316,16 @@ class Site:
   <header class="page-head">
     {crumbs}
     <p class="kicker">{PERIOD}</p>
-    <h1>Metros</h1>
-    <p class="lede">Austin, Chicago, and Seattle as published in OEWS metropolitan area estimates.</p>
+    <h1>Occupational wages by metro</h1>
+    <p class="lede">Austin, Chicago, and Seattle as published in OEWS metropolitan statistical area estimates.</p>
   </header>
   <div class="metro-cards">{cards}</div>
 </div>
 """
         self.page(
-            f"Metros — {SITE_NAME}",
+            f"Occupational wages by metro — {SITE_NAME}",
             body,
-            "Browse OEWS wage tables for Austin, Chicago, and Seattle.",
+            f"Browse BLS OEWS {PERIOD} wage tables for Austin, Chicago, and Seattle.",
             "metros/index.html",
             f"{SITE_URL}/metros/",
             current="metros",
@@ -342,17 +342,17 @@ class Site:
 <div class="wrap">
   <header class="page-head">
     {crumbs}
-    <p class="kicker">2018 SOC</p>
-    <h1>Occupations</h1>
-    <p class="lede">Compare each detailed occupation across the three WageGrid metros.</p>
+    <p class="kicker">2018 SOC · {PERIOD}</p>
+    <h1>Occupation salaries across three metros</h1>
+    <p class="lede">Compare each detailed occupation’s OEWS wages in Austin, Chicago, and Seattle.</p>
   </header>
   <ul class="occ-list">{items}</ul>
 </div>
 """
         self.page(
-            f"Occupations — {SITE_NAME}",
+            f"Occupation salaries: Austin vs Chicago vs Seattle — {SITE_NAME}",
             body,
-            "25 OEWS occupations compared across Austin, Chicago, and Seattle.",
+            f"25 OEWS {PERIOD} occupations compared across Austin, Chicago, and Seattle.",
             "occupations/index.html",
             f"{SITE_URL}/occupations/",
             current="occupations",
@@ -401,9 +401,9 @@ class Site:
 <div class="wrap">
   <header class="page-head">
     {crumbs}
-    <p class="kicker">OEWS area {e(metro['area_code'])}</p>
-    <h1>{e(metro['name'])} wages</h1>
-    <p class="lede">{PERIOD} occupational employment and wage estimates for {e(metro['short_name'])}.</p>
+    <p class="kicker">OEWS area {e(metro['area_code'])} · {PERIOD}</p>
+    <h1>Occupational wages in {e(metro['short_name'])}</h1>
+    <p class="lede">{PERIOD} occupational employment and wage estimates for {e(metro['name'])}. Wage-and-salary workers only.</p>
   </header>
   <section class="section">
     {self.metro_table(metro)}
@@ -416,9 +416,9 @@ class Site:
 </div>
 """
         self.page(
-            f"{metro['name']} wages — {SITE_NAME}",
+            f"Occupational wages in {metro['short_name']} — OEWS {PERIOD} — {SITE_NAME}",
             body,
-            f"BLS OEWS {PERIOD} wages for {metro['name']} across 25 occupations.",
+            f"BLS OEWS {PERIOD} wages for {metro['name']} across 25 occupations. Self-employed workers are excluded.",
             f"metros/{metro['slug']}/index.html",
             f"{SITE_URL}/metros/{metro['slug']}/",
             current="metros",
@@ -503,9 +503,9 @@ class Site:
 <div class="wrap">
   <header class="page-head">
     {crumbs}
-    <p class="kicker">SOC {e(occ['soc'])}</p>
-    <h1>{e(occ['title'])} by metro</h1>
-    <p class="lede">{PERIOD} OEWS comparison for {e(occ['short_title'])} in Austin, Chicago, and Seattle.</p>
+    <p class="kicker">SOC {e(occ['soc'])} · {PERIOD}</p>
+    <h1>{e(occ['short_title'])} salary: Austin vs Chicago vs Seattle</h1>
+    <p class="lede">{PERIOD} OEWS comparison for {e(occ['title'])} in Austin-Round Rock-San Marcos, TX; Chicago-Naperville-Elgin, IL-IN; and Seattle-Tacoma-Bellevue, WA.</p>
   </header>
   <section class="section">
     {table}
@@ -519,9 +519,9 @@ class Site:
 </div>
 """
         self.page(
-            f"{occ['title']} wages by metro — {SITE_NAME}",
+            f"{occ['short_title']} salary: Austin vs Chicago vs Seattle — {SITE_NAME}",
             body,
-            f"Compare {occ['title']} wages in Austin, Chicago, and Seattle using BLS OEWS {PERIOD}.",
+            f"Compare official OEWS {PERIOD} {occ['title']} wages in Austin, Chicago, and Seattle. No invented numbers.",
             f"occupations/{occ['slug']}/index.html",
             f"{SITE_URL}/occupations/{occ['slug']}/",
             current="occupations",
@@ -606,9 +606,9 @@ class Site:
 <div class="wrap">
   <header class="page-head">
     {crumbs}
-    <p class="kicker">{e(metro['name'])} · SOC {e(occ['soc'])}</p>
-    <h1>{e(occ['title'])} wages in {e(metro['short_name'])}</h1>
-    <p class="lede">Official OEWS {PERIOD} estimates for {e(occ['short_title'])} in {e(metro['name'])}.</p>
+    <p class="kicker">{e(metro['name'])} · SOC {e(occ['soc'])} · {PERIOD}</p>
+    <h1>{e(occ['short_title'])} salary in {e(metro['short_name'])}</h1>
+    <p class="lede">Official OEWS {PERIOD} estimates for {e(occ['title'])} in {e(metro['name'])}. Wage-and-salary workers only; blank cells are BLS suppressions.</p>
   </header>
   <section class="section">
     <div class="stat-row">{stat_html}</div>
@@ -641,9 +641,9 @@ class Site:
 </div>
 """
         self.page(
-            f"{occ['title']} wages in {metro['short_name']} — {SITE_NAME}",
+            f"{occ['short_title']} salary in {metro['short_name']} — OEWS {PERIOD} — {SITE_NAME}",
             body,
-            f"BLS OEWS {PERIOD} wages for {occ['title']} in {metro['name']}.",
+            f"BLS OEWS {PERIOD} wages for {occ['title']} in {metro['name']}. Official estimates only.",
             f"metros/{metro['slug']}/{occ['slug']}/index.html",
             f"{SITE_URL}/metros/{metro['slug']}/{occ['slug']}/",
             json_ld=[crumb_ld, faq_ld(faqs)],

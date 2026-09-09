@@ -138,8 +138,8 @@ h3 {
 
 h1 {
   margin: 0 0 0.7rem;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  max-width: 18ch;
+  font-size: clamp(1.85rem, 4.6vw, 3.1rem);
+  max-width: 28ch;
 }
 
 .lede {
