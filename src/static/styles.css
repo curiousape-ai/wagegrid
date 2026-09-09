@@ -285,12 +285,18 @@ th.num {
   text-transform: uppercase;
 }
 
-.stat-value,
-.stat dd {
-  margin: 0.25rem 0 0;
-  font-family: var(--serif);
-  font-size: 1.7rem;
-  letter-spacing: -0.03em;
+.stat-value--card {
+  font-size: 1.35rem;
+}
+
+.compare-points {
+  margin: 0;
+  padding-left: 1.2rem;
+  max-width: 46rem;
+}
+
+.compare-points li {
+  margin: 0.45rem 0;
 }
 
 .note {

@@ -329,6 +329,60 @@ def faq_section(faqs: list[dict]) -> str:
     return f'<section class="section faq"><h2>Questions</h2>{items}</section>'
 
 
+def signed_year_delta(base: float | int | None, other: float | int | None) -> str:
+    """Format other minus base from published annual wages only."""
+    if base is None or other is None:
+        return '<span class="blank" title="Not published by BLS">—</span>'
+    diff = int(round(other)) - int(round(base))
+    if diff == 0:
+        return "same"
+    sign = "+" if diff > 0 else "−"
+    return f"{sign}${abs(diff):,}"
+
+
+def pairwise_median_items(scored: list[tuple[object, dict, dict]]) -> str:
+    items = []
+    rows = [(metro, obs) for _score, metro, obs in scored]
+    for i, (a_metro, a_obs) in enumerate(rows):
+        for b_metro, b_obs in rows[i + 1 :]:
+            a = a_obs.get("annual_median")
+            b = b_obs.get("annual_median")
+            if a is None or b is None:
+                items.append(
+                    "<li>OEWS "
+                    + PERIOD
+                    + f" does not publish an annual median for both {e(a_metro['short_name'])} and "
+                    + f"{e(b_metro['short_name'])}, so WageGrid does not compute a gap.</li>"
+                )
+                continue
+            diff = int(round(a)) - int(round(b))
+            if diff == 0:
+                items.append(
+                    f"<li>{e(a_metro['short_name'])} and {e(b_metro['short_name'])} have the same "
+                    f"published annual median ({e(plain_year(a))}).</li>"
+                )
+            elif diff > 0:
+                items.append(
+                    f"<li>{e(a_metro['short_name'])}’s published annual median ({e(plain_year(a))}) is "
+                    f"{e(plain_year(diff))} higher than {e(b_metro['short_name'])}’s ({e(plain_year(b))}).</li>"
+                )
+            else:
+                items.append(
+                    f"<li>{e(b_metro['short_name'])}’s published annual median ({e(plain_year(b))}) is "
+                    f"{e(plain_year(abs(diff)))} higher than {e(a_metro['short_name'])}’s ({e(plain_year(a))}).</li>"
+                )
+    if not items:
+        return ""
+    return (
+        '<section class="section">'
+        "<h2>Metro vs metro</h2>"
+        f"<ul class=\"compare-points\">{''.join(items)}</ul>"
+        "<p class=\"muted\">Gaps are published OEWS annual medians minus published OEWS annual medians. "
+        "WageGrid does not adjust for cost of living, housing, or taxes.</p>"
+        "</section>"
+    )
+
+
 class Site:
     def __init__(self) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
@@ -664,7 +718,7 @@ class Site:
             json_ld=[crumb_ld],
         )
 
-    def occ_compare_table(self, occ: dict) -> tuple[str, dict | None]:
+    def occ_compare_table(self, occ: dict) -> tuple[str, dict | None, list]:
         scored = []
         for metro in self.metros:
             obs = self.row(metro, occ)
@@ -674,29 +728,44 @@ class Site:
             scored.append((score, metro, obs))
         published = [s for s in scored if s[0] is not None]
         best = max(published, key=lambda item: item[0])[1]["area_code"] if published else None
+        show_hourly = any(obs.get("hourly_median") is not None or obs.get("hourly_mean") is not None for _s, _m, obs in scored)
+        winner_median = None
+        if best is not None:
+            winner_median = next(obs.get("annual_median") for _s, m, obs in scored if m["area_code"] == best)
         rows = []
         for score, metro, obs in scored:
             klass = ' class="winner"' if metro["area_code"] == best else ""
             href = f"/metros/{metro['slug']}/{occ['slug']}/"
+            hourly_cell = (
+                f'<td class="num">{money_hour(obs.get("hourly_median"))}</td>' if show_hourly else ""
+            )
+            vs_high = (
+                "highest"
+                if metro["area_code"] == best
+                else signed_year_delta(winner_median, obs.get("annual_median"))
+            )
             rows.append(
                 f"""<tr{klass}>
                   <td><a href="{e(href)}">{e(metro['short_name'])}</a><div class="muted">{e(metro['name'])}</div></td>
                   <td class="num">{count(obs.get('employment'))}</td>
-                  <td class="num">{money_hour(obs.get('hourly_median'))}</td>
+                  {hourly_cell}
                   <td class="num">{money_year(obs.get('annual_median'))}</td>
                   <td class="num">{money_year(obs.get('annual_mean'))}</td>
+                  <td class="num">{vs_high}</td>
                   <td class="num">{ratio(obs.get('location_quotient'))}</td>
                 </tr>"""
             )
+        hourly_head = '<th class="num">Hourly median</th>' if show_hourly else ""
         table = f"""
 <table>
   <thead>
     <tr>
       <th>Metro</th>
       <th class="num">Employment</th>
-      <th class="num">Hourly median</th>
+      {hourly_head}
       <th class="num">Annual median</th>
       <th class="num">Annual mean</th>
+      <th class="num">vs highest median</th>
       <th class="num">LQ</th>
     </tr>
   </thead>
@@ -721,6 +790,15 @@ class Site:
             else "<p>No metro in this slice has a published annual wage for ranking.</p>"
         )
         faqs = occupation_faqs(occ, scored)
+        metro_cards = "".join(
+            f'''<li><a class="card" href="/metros/{e(metro["slug"])}/{e(occ["slug"])}/">
+              <h3>{e(metro["short_name"])}</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">{money_year(obs.get("annual_median"))}</p>
+              <p>Employment {count(obs.get("employment"))} · LQ {ratio(obs.get("location_quotient"))}</p>
+            </a></li>'''
+            for _score, metro, obs in scored
+        )
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -730,10 +808,12 @@ class Site:
     <p class="lede">{PERIOD} OEWS comparison for {e(occ['title'])} in Austin-Round Rock-San Marcos, TX; Chicago-Naperville-Elgin, IL-IN; and Seattle-Tacoma-Bellevue, WA.</p>
   </header>
   <section class="section">
+    <ul class="related">{metro_cards}</ul>
     {table}
-    <div class="note">{win_line}<p>Highlighted row is the highest published annual median (annual mean if median is suppressed).</p></div>
+    <div class="note">{win_line}<p>Highlighted row is the highest published annual median (annual mean if median is suppressed). The vs-highest column is blank when either median is unpublished.</p></div>
     {self.ad_slot()}
   </section>
+  {pairwise_median_items(scored)}
   <section class="section">
     <h2>Related occupations</h2>
     <ul class="related">{related}</ul>
@@ -775,20 +855,29 @@ class Site:
             for label, value in stats
         )
         compare_rows = []
+        this_median = obs.get("annual_median")
         for other in self.metros:
             other_obs = self.row(other, occ)
             href = f"/metros/{other['slug']}/{occ['slug']}/"
             current = other["slug"] == metro["slug"]
             label = f"{other['short_name']}" + (" (this metro)" if current else "")
             link = e(label) if current else f'<a href="{e(href)}">{e(label)}</a>'
+            vs_cell = "—" if current else signed_year_delta(this_median, other_obs.get("annual_median"))
+            hourly_cell = (
+                f'<td class="num">{money_hour(other_obs.get("hourly_median"))}</td>' if not only_annual else ""
+            )
             compare_rows.append(
                 f"""<tr>
                   <td>{link}</td>
+                  {hourly_cell}
                   <td class="num">{money_year(other_obs.get('annual_median'))}</td>
                   <td class="num">{money_year(other_obs.get('annual_mean'))}</td>
+                  <td class="num">{vs_cell}</td>
                   <td class="num">{count(other_obs.get('employment'))}</td>
+                  <td class="num">{ratio(other_obs.get('location_quotient'))}</td>
                 </tr>"""
             )
+        hourly_head = '<th class="num">Hourly median</th>' if not only_annual else ""
         related = "".join(
             f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>In {e(metro["short_name"])}</p></a></li>'
             for o in self.related_occs(occ)
@@ -827,13 +916,17 @@ class Site:
       <thead>
         <tr>
           <th>Metro</th>
+          {hourly_head}
           <th class="num">Annual median</th>
           <th class="num">Annual mean</th>
+          <th class="num">vs {e(metro['short_name'])} median</th>
           <th class="num">Employment</th>
+          <th class="num">LQ</th>
         </tr>
       </thead>
       <tbody>{"".join(compare_rows)}</tbody>
     </table>
+    <p class="muted">The vs column is the other metro’s published annual median minus {e(metro['short_name'])}’s. It stays blank if either median is unpublished.</p>
     <ul class="related related--after">{other_metros}</ul>
   </section>
   <section class="section">
