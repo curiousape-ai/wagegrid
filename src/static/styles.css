@@ -361,8 +361,20 @@ th.num {
   max-width: 40rem;
 }
 
-.winner {
-  box-shadow: inset 3px 0 0 var(--forest);
+.faq details {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.55rem 0;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.faq details p {
+  margin: 0.45rem 0 0.7rem;
+  color: var(--ink-soft);
+  max-width: 46rem;
 }
 
 @media (max-width: 720px) {

@@ -91,6 +91,244 @@ def annual_only(occ: dict, row: dict) -> bool:
     return hourly_missing and annual_present
 
 
+def median_compare_parts(this_median: float | int, others: list[tuple[dict, dict]]) -> list[str]:
+    parts = []
+    for metro, obs in others:
+        other = obs.get("annual_median")
+        if other is None:
+            parts.append(f"{metro['short_name']} has no published annual median")
+            continue
+        diff = int(round(this_median)) - int(round(other))
+        if diff == 0:
+            parts.append(f"the same as {metro['short_name']} ({plain_year(other)})")
+        elif diff > 0:
+            parts.append(f"{plain_year(diff)} higher than {metro['short_name']} ({plain_year(other)})")
+        else:
+            parts.append(f"{plain_year(abs(diff))} lower than {metro['short_name']} ({plain_year(other)})")
+    return parts
+
+
+def pair_faqs(metro: dict, occ: dict, obs: dict, only_annual: bool, other_rows: list[tuple[dict, dict]]) -> list[dict]:
+    faqs: list[dict] = []
+    if obs.get("annual_median") is not None:
+        faqs.append(
+            {
+                "q": f"What is the median annual wage for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} "
+                    f"is {plain_year(obs['annual_median'])}."
+                ),
+            }
+        )
+    else:
+        faqs.append(
+            {
+                "q": f"Is an annual median published for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"BLS did not publish an annual median for {occ['title']} in {metro['name']} "
+                    f"in OEWS {PERIOD}."
+                ),
+            }
+        )
+    if only_annual:
+        faqs.append(
+            {
+                "q": f"Does OEWS publish an hourly wage for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"No. OEWS {PERIOD} does not publish hourly mean or median for {occ['title']} "
+                    f"in {metro['name']}. WageGrid shows annual wages only and does not convert annual to hourly."
+                ),
+            }
+        )
+    elif obs.get("hourly_median") is not None:
+        faqs.append(
+            {
+                "q": f"What is the hourly median for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"The OEWS {PERIOD} hourly median for {occ['title']} in {metro['name']} "
+                    f"is {plain_hour(obs['hourly_median'])}."
+                ),
+            }
+        )
+    if obs.get("employment") is not None:
+        faqs.append(
+            {
+                "q": f"How many {occ['short_title']} work in {metro['short_name']}?",
+                "a": (
+                    f"OEWS {PERIOD} estimates {int(round(obs['employment'])):,} wage-and-salary "
+                    f"{occ['title']} in {metro['name']}. Self-employed workers are excluded."
+                ),
+            }
+        )
+    else:
+        faqs.append(
+            {
+                "q": f"How many {occ['short_title']} work in {metro['short_name']}?",
+                "a": f"Employment for {occ['title']} in {metro['name']} is suppressed in OEWS {PERIOD}.",
+            }
+        )
+    if obs.get("location_quotient") is not None:
+        faqs.append(
+            {
+                "q": f"What is the location quotient for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"The OEWS {PERIOD} location quotient is {float(obs['location_quotient']):.2f}. "
+                    f"Values above 1.00 mean {occ['title']} are more concentrated in {metro['name']} "
+                    f"than in the national occupational mix."
+                ),
+            }
+        )
+    if obs.get("annual_mean") is not None:
+        faqs.append(
+            {
+                "q": f"What is the mean annual wage for {occ['short_title']} in {metro['short_name']}?",
+                "a": (
+                    f"The OEWS {PERIOD} annual mean for {occ['title']} in {metro['name']} "
+                    f"is {plain_year(obs['annual_mean'])}."
+                ),
+            }
+        )
+    this_median = obs.get("annual_median")
+    if this_median is not None and other_rows:
+        parts = median_compare_parts(this_median, other_rows)
+        if parts:
+            faqs.append(
+                {
+                    "q": (
+                        f"How does {metro['short_name']}'s {occ['short_title']} median "
+                        f"compare to the other WageGrid metros?"
+                    ),
+                    "a": (
+                        f"{metro['short_name']}'s published OEWS {PERIOD} annual median "
+                        f"({plain_year(this_median)}) is " + " and ".join(parts) + ". "
+                        "These are published medians minus published medians. "
+                        "WageGrid does not adjust for cost of living."
+                    ),
+                }
+            )
+    faqs.append(
+        {
+            "q": "Does this wage include self-employed workers?",
+            "a": (
+                "No. OEWS estimates cover wage-and-salary workers and exclude the self-employed. "
+                "WageGrid does not add a self-employment figure."
+            ),
+        }
+    )
+    faqs.append(
+        {
+            "q": "Why is a wage cell blank?",
+            "a": "BLS withholds some OEWS estimates for quality or confidentiality. WageGrid does not fill those cells.",
+        }
+    )
+    return faqs
+
+
+def occupation_faqs(occ: dict, scored: list[tuple[object, dict, dict]]) -> list[dict]:
+    faqs: list[dict] = []
+    published = [(metro, obs) for _score, metro, obs in scored if obs.get("annual_median") is not None]
+    if published:
+        ranked = sorted(published, key=lambda item: item[1]["annual_median"], reverse=True)
+        best_metro, best_obs = ranked[0]
+        listing = ", ".join(f"{m['short_name']} {plain_year(o['annual_median'])}" for m, o in ranked)
+        faqs.append(
+            {
+                "q": f"Which WageGrid metro has the highest {occ['short_title']} annual median?",
+                "a": (
+                    f"{best_metro['name']} has the highest published OEWS {PERIOD} annual median "
+                    f"for {occ['title']} ({plain_year(best_obs['annual_median'])}). "
+                    f"Among metros with a published median: {listing}. "
+                    "WageGrid does not rank suppressed cells or invent a missing wage."
+                ),
+            }
+        )
+    else:
+        faqs.append(
+            {
+                "q": f"Which WageGrid metro has the highest {occ['short_title']} annual median?",
+                "a": (
+                    f"OEWS {PERIOD} does not publish enough annual medians to rank {occ['title']} "
+                    "across Austin, Chicago, and Seattle."
+                ),
+            }
+        )
+    employed = [(metro, obs) for _score, metro, obs in scored if obs.get("employment") is not None]
+    if employed:
+        ranked = sorted(employed, key=lambda item: item[1]["employment"], reverse=True)
+        top_metro, top_obs = ranked[0]
+        listing = ", ".join(f"{m['short_name']} {int(round(o['employment'])):,}" for m, o in ranked)
+        faqs.append(
+            {
+                "q": f"Which WageGrid metro employs the most {occ['short_title']}?",
+                "a": (
+                    f"{top_metro['name']} has the highest published OEWS {PERIOD} employment "
+                    f"for {occ['title']} ({int(round(top_obs['employment'])):,} wage-and-salary workers). "
+                    f"Published employment: {listing}. Self-employed workers are excluded."
+                ),
+            }
+        )
+    lqs = [(metro, obs) for _score, metro, obs in scored if obs.get("location_quotient") is not None]
+    if lqs:
+        ranked = sorted(lqs, key=lambda item: item[1]["location_quotient"], reverse=True)
+        top_metro, top_obs = ranked[0]
+        listing = ", ".join(f"{m['short_name']} {float(o['location_quotient']):.2f}" for m, o in ranked)
+        faqs.append(
+            {
+                "q": f"Where are {occ['short_title']} most concentrated relative to the national mix?",
+                "a": (
+                    f"{top_metro['short_name']} has the highest published location quotient "
+                    f"({float(top_obs['location_quotient']):.2f}). Published LQs: {listing}."
+                ),
+            }
+        )
+    hourly_rows = [(metro, obs) for _score, metro, obs in scored if obs.get("hourly_median") is not None]
+    if not hourly_rows:
+        faqs.append(
+            {
+                "q": f"Does OEWS publish hourly pay for {occ['short_title']}?",
+                "a": (
+                    f"Not in this slice. OEWS {PERIOD} does not publish hourly mean or median for "
+                    f"{occ['title']} in Austin, Chicago, or Seattle. WageGrid does not convert annual wages to hourly."
+                ),
+            }
+        )
+    else:
+        bits = []
+        for _score, metro, obs in scored:
+            if obs.get("hourly_median") is not None:
+                bits.append(f"{metro['short_name']} {plain_hour(obs['hourly_median'])}")
+            else:
+                bits.append(f"{metro['short_name']} not published")
+        faqs.append(
+            {
+                "q": f"What is the hourly median for {occ['short_title']} in each metro?",
+                "a": (
+                    f"OEWS {PERIOD} hourly medians: " + "; ".join(bits) + ". "
+                    "Blank means BLS withheld the estimate."
+                ),
+            }
+        )
+    faqs.append(
+        {
+            "q": "Does this comparison include self-employed workers?",
+            "a": (
+                "No. OEWS covers wage-and-salary workers and excludes the self-employed. "
+                "WageGrid does not add a self-employment estimate."
+            ),
+        }
+    )
+    return faqs
+
+
+def faq_section(faqs: list[dict]) -> str:
+    if not faqs:
+        return ""
+    items = "".join(
+        f"<details><summary>{e(item['q'])}</summary><p>{e(item['a'])}</p></details>" for item in faqs
+    )
+    return f'<section class="section faq"><h2>Questions</h2>{items}</section>'
+
+
 class Site:
     def __init__(self) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
@@ -197,6 +435,7 @@ class Site:
     def crumbs(self, items: list[tuple[str, str]]) -> tuple[str, dict]:
         parts = []
         crumb_ld = {
+            "@context": "https://schema.org",
             "@type": "BreadcrumbList",
             "itemListElement": [],
         }
@@ -465,10 +704,10 @@ class Site:
 </table>
 """
         winner = next((m for m in self.metros if m["area_code"] == best), None)
-        return table, winner
+        return table, winner, scored
 
     def build_occupation(self, occ: dict) -> None:
-        table, winner = self.occ_compare_table(occ)
+        table, winner, scored = self.occ_compare_table(occ)
         related = "".join(
             f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(o["soc"])}</p></a></li>'
             for o in self.related_occs(occ)
@@ -481,24 +720,7 @@ class Site:
             if winner
             else "<p>No metro in this slice has a published annual wage for ranking.</p>"
         )
-        faqs = [
-            {
-                "q": f"Which WageGrid metro pays {occ['short_title']} the most?",
-                "a": (
-                    f"{winner['name']} has the highest published OEWS {PERIOD} annual median for {occ['title']} among Austin, Chicago, and Seattle."
-                    if winner
-                    else f"OEWS {PERIOD} does not publish enough annual wages to rank {occ['title']} across these metros."
-                ),
-            },
-            {
-                "q": f"Does OEWS publish hourly pay for {occ['short_title']}?",
-                "a": (
-                    f"Often annual-only. WageGrid hides hourly cells when BLS does not publish them for {occ['title']}."
-                    if occ.get("annual_only")
-                    else f"When BLS publishes hourly mean or median for {occ['title']}, WageGrid shows them. Suppressed cells stay blank."
-                ),
-            },
-        ]
+        faqs = occupation_faqs(occ, scored)
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -516,6 +738,7 @@ class Site:
     <h2>Related occupations</h2>
     <ul class="related">{related}</ul>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -576,32 +799,12 @@ class Site:
             if m["slug"] != metro["slug"]
         )
         teacher_note = (
-            f"<p>{e(occ['title'])} is shown annual-only because OEWS did not publish hourly wages for this metro × occupation (or the occupation is typically annual-only).</p>"
+            f"<p>{e(occ['title'])} is shown annual-only because OEWS did not publish hourly wages for this metro × occupation (or the occupation is typically annual-only). WageGrid does not convert annual pay to an hourly rate.</p>"
             if only_annual
             else ""
         )
-        faqs = [
-            {
-                "q": f"What is the median wage for {occ['short_title']} in {metro['short_name']}?",
-                "a": (
-                    f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} is {plain_year(obs.get('annual_median'))}."
-                    if obs.get("annual_median") is not None
-                    else f"BLS did not publish an annual median for {occ['title']} in {metro['name']} in OEWS {PERIOD}."
-                ),
-            },
-            {
-                "q": f"How many {occ['short_title']} work in {metro['short_name']}?",
-                "a": (
-                    f"OEWS {PERIOD} estimates {int(round(obs['employment'])):,} {occ['title']} in {metro['name']}."
-                    if obs.get("employment") is not None
-                    else f"Employment for {occ['title']} in {metro['name']} is suppressed in OEWS {PERIOD}."
-                ),
-            },
-            {
-                "q": "Why is a wage cell blank?",
-                "a": "BLS withholds some OEWS estimates for quality or confidentiality. WageGrid does not fill those cells.",
-            },
-        ]
+        other_rows = [(m, self.row(m, occ)) for m in self.metros if m["slug"] != metro["slug"]]
+        faqs = pair_faqs(metro, occ, obs, only_annual, other_rows)
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -638,6 +841,7 @@ class Site:
     <ul class="related">{related}</ul>
     <p><a href="/metros/{e(metro['slug'])}/">All occupations in {e(metro['short_name'])}</a> · <a href="/occupations/{e(occ['slug'])}/">All metros for {e(occ['short_title'])}</a></p>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
