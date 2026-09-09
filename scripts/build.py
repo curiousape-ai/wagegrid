@@ -504,6 +504,17 @@ class Site:
 </aside>
 """
 
+    def affiliate_slot(self) -> str:
+        return """
+<aside class="ad-slot ad-slot--affiliate" aria-label="Example affiliate placeholder">
+  <!-- Example affiliate slot: no live partner IDs, no tracking pixels, no affiliate URLs. -->
+  <p class="ad-slot__label">Example affiliate slot</p>
+  <div class="ad-slot__box" data-affiliate="example-placeholder">
+    <p>Placeholder only. No affiliate partners are live on WageGrid.</p>
+  </div>
+</aside>
+"""
+
     def crumbs(self, items: list[tuple[str, str]]) -> tuple[str, dict]:
         parts = []
         crumb_ld = {
@@ -601,6 +612,7 @@ class Site:
   <section class="section">
     <h2>Ads</h2>
     <p>Pages include an empty AdSense slot. No ad script ships until a publisher ID is added. An example affiliate placeholder may appear, labeled as such, with no live partner IDs.</p>
+    {self.affiliate_slot()}
   </section>
 </div>
 """
@@ -831,6 +843,7 @@ class Site:
     {table}
     <div class="note">{win_line}<p>Highlighted row is the highest published annual median (annual mean if median is suppressed). The vs-highest column is blank when either median is unpublished.</p></div>
     {self.ad_slot()}
+    {self.affiliate_slot()}
   </section>
   {pairwise_median_items(scored)}
   <section class="section">
