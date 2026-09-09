@@ -138,8 +138,8 @@ h3 {
 
 h1 {
   margin: 0 0 0.7rem;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  max-width: 18ch;
+  font-size: clamp(1.85rem, 4.6vw, 3.1rem);
+  max-width: 28ch;
 }
 
 .lede {
@@ -285,12 +285,18 @@ th.num {
   text-transform: uppercase;
 }
 
-.stat-value,
-.stat dd {
-  margin: 0.25rem 0 0;
-  font-family: var(--serif);
-  font-size: 1.7rem;
-  letter-spacing: -0.03em;
+.stat-value--card {
+  font-size: 1.35rem;
+}
+
+.compare-points {
+  margin: 0;
+  padding-left: 1.2rem;
+  max-width: 46rem;
+}
+
+.compare-points li {
+  margin: 0.45rem 0;
 }
 
 .note {
@@ -331,16 +337,15 @@ th.num {
   text-transform: uppercase;
 }
 
-.ad-slot__box {
-  min-height: 5.5rem;
-  border-style: dashed;
-  background: repeating-linear-gradient(
-    -45deg,
-    transparent,
-    transparent 8px,
-    rgba(22, 20, 16, 0.03) 8px,
-    rgba(22, 20, 16, 0.03) 16px
-  );
+.ad-slot--affiliate .ad-slot__box {
+  min-height: auto;
+  padding: 0.85rem 1rem;
+}
+
+.ad-slot--affiliate .ad-slot__box p {
+  margin: 0;
+  color: var(--mute);
+  font-size: 0.92rem;
 }
 
 .site-footer {
@@ -361,8 +366,21 @@ th.num {
   max-width: 40rem;
 }
 
-.winner {
-  box-shadow: inset 3px 0 0 var(--forest);
+.subhead {
+  margin: 1.4rem 0 0.6rem;
+  font-family: var(--serif);
+  font-size: 1.15rem;
+}
+
+.faq summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.faq details p {
+  margin: 0.45rem 0 0.7rem;
+  color: var(--ink-soft);
+  max-width: 46rem;
 }
 
 @media (max-width: 720px) {

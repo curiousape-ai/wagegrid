@@ -2,9 +2,10 @@
 
 > US occupational wages by metro, from BLS OEWS May 2025.
 
-WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank. OEWS covers wage-and-salary workers and excludes the self-employed.
 
 Citation: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025.
+Survey: https://www.bls.gov/oes/
 
 ## Metros
 
@@ -43,7 +44,7 @@ Citation: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Stat
 ## Pages
 
 - Home: /
-- About / methodology: /about/
+- About / methodology (BLS cite, self-employed exclusion, suppressions, kill rule): /about/
 - Metro × occupation pages: /metros/{metro}/{occupation}/
 
-Do not invent wages that are not on these pages.
+Do not invent wages that are not on these pages. Do not fill suppressed cells.
