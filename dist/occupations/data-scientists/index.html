@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Data Scientists wages by metro — WageGrid</title>
-  <meta name="description" content="Compare Data Scientists wages in Austin, Chicago, and Seattle using BLS OEWS May 2025.">
+  <title>Data scientists salary: Austin vs Chicago vs Seattle — WageGrid</title>
+  <meta name="description" content="Compare official OEWS May 2025 Data Scientists wages in Austin, Chicago, and Seattle. No invented numbers.">
   <link rel="canonical" href="https://wagegrid.pages.dev/occupations/data-scientists/">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,7 @@
   <script type="application/ld+json">
 [
   {
+    "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
@@ -42,18 +43,42 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Which WageGrid metro pays Data scientists the most?",
+        "name": "Which WageGrid metro has the highest Data scientists annual median?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Data Scientists among Austin, Chicago, and Seattle."
+          "text": "Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Data Scientists ($164,740). Among metros with a published median: Seattle $164,740, Austin $127,360, Chicago $107,640. WageGrid does not rank suppressed cells or invent a missing wage."
         }
       },
       {
         "@type": "Question",
-        "name": "Does OEWS publish hourly pay for Data scientists?",
+        "name": "Which WageGrid metro employs the most Data scientists?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "When BLS publishes hourly mean or median for Data Scientists, WageGrid shows them. Suppressed cells stay blank."
+          "text": "Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 employment for Data Scientists (8,370 wage-and-salary workers). Published employment: Seattle 8,370, Chicago 7,940, Austin 3,730. Self-employed workers are excluded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where are Data scientists most concentrated relative to the national mix?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Seattle has the highest published location quotient (2.38). Published LQs: Seattle 2.38, Austin 1.71, Chicago 1.04."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the hourly median for Data scientists in each metro?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OEWS May 2025 hourly medians: Austin $61.23; Chicago $51.75; Seattle $79.20. Blank means BLS withheld the estimate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this comparison include self-employed workers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. OEWS covers wage-and-salary workers and excludes the self-employed. WageGrid does not add a self-employment estimate."
         }
       }
     ]
@@ -77,11 +102,27 @@
 <div class="wrap">
   <header class="page-head">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/occupations/">Occupations</a> / <a href="/occupations/data-scientists/">Data scientists</a></nav>
-    <p class="kicker">SOC 15-2051</p>
-    <h1>Data Scientists by metro</h1>
-    <p class="lede">May 2025 OEWS comparison for Data scientists in Austin, Chicago, and Seattle.</p>
+    <p class="kicker">SOC 15-2051 · May 2025</p>
+    <h1>Data scientists salary: Austin vs Chicago vs Seattle</h1>
+    <p class="lede">May 2025 OEWS comparison for Data Scientists in Austin-Round Rock-San Marcos, TX; Chicago-Naperville-Elgin, IL-IN; and Seattle-Tacoma-Bellevue, WA.</p>
   </header>
   <section class="section">
+    <ul class="related"><li><a class="card" href="/metros/austin-round-rock-san-marcos-tx/data-scientists/">
+              <h3>Austin</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$127,360</p>
+              <p>Employment 3,730 · LQ 1.71</p>
+            </a></li><li><a class="card" href="/metros/chicago-naperville-elgin-il-in/data-scientists/">
+              <h3>Chicago</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$107,640</p>
+              <p>Employment 7,940 · LQ 1.04</p>
+            </a></li><li><a class="card" href="/metros/seattle-tacoma-bellevue-wa/data-scientists/">
+              <h3>Seattle</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$164,740</p>
+              <p>Employment 8,370 · LQ 2.38</p>
+            </a></li></ul>
     
 <table>
   <thead>
@@ -91,6 +132,7 @@
       <th class="num">Hourly median</th>
       <th class="num">Annual median</th>
       <th class="num">Annual mean</th>
+      <th class="num">vs highest median</th>
       <th class="num">LQ</th>
     </tr>
   </thead>
@@ -100,6 +142,7 @@
                   <td class="num">$61.23</td>
                   <td class="num">$127,360</td>
                   <td class="num">$126,830</td>
+                  <td class="num">−$37,380</td>
                   <td class="num">1.71</td>
                 </tr><tr>
                   <td><a href="/metros/chicago-naperville-elgin-il-in/data-scientists/">Chicago</a><div class="muted">Chicago-Naperville-Elgin, IL-IN</div></td>
@@ -107,6 +150,7 @@
                   <td class="num">$51.75</td>
                   <td class="num">$107,640</td>
                   <td class="num">$118,860</td>
+                  <td class="num">−$57,100</td>
                   <td class="num">1.04</td>
                 </tr><tr class="winner">
                   <td><a href="/metros/seattle-tacoma-bellevue-wa/data-scientists/">Seattle</a><div class="muted">Seattle-Tacoma-Bellevue, WA</div></td>
@@ -114,22 +158,34 @@
                   <td class="num">$79.20</td>
                   <td class="num">$164,740</td>
                   <td class="num">$160,460</td>
+                  <td class="num">highest</td>
                   <td class="num">2.38</td>
                 </tr></tbody>
 </table>
 
-    <div class="note"><p>Seattle has the highest published annual median among the three metros.</p><p>Highlighted row is the highest published annual median (annual mean if median is suppressed).</p></div>
+    <div class="note"><p>Seattle has the highest published annual median among the three metros.</p><p>Highlighted row is the highest published annual median (annual mean if median is suppressed). The vs-highest column is blank when either median is unpublished.</p></div>
     
 <aside class="ad-slot" aria-label="Advertisement">
   <p class="ad-slot__label">Advertisement</p>
   <div class="ad-slot__box" data-ad="adsense-stub"></div>
 </aside>
 
+    
+<aside class="ad-slot ad-slot--affiliate" aria-label="Example affiliate placeholder">
+  <!-- Example affiliate slot: no live partner IDs, no tracking pixels, no affiliate URLs. -->
+  <p class="ad-slot__label">Example affiliate slot</p>
+  <div class="ad-slot__box" data-affiliate="example-placeholder">
+    <p>Placeholder only. No affiliate partners are live on WageGrid.</p>
+  </div>
+</aside>
+
   </section>
+  <section class="section"><h2>Metro vs metro</h2><ul class="compare-points"><li>Austin’s published annual median ($127,360) is $19,720 higher than Chicago’s ($107,640).</li><li>Seattle’s published annual median ($164,740) is $37,380 higher than Austin’s ($127,360).</li><li>Seattle’s published annual median ($164,740) is $57,100 higher than Chicago’s ($107,640).</li></ul><p class="muted">Gaps are published OEWS annual medians minus published OEWS annual medians. WageGrid does not adjust for cost of living, housing, or taxes.</p></section>
   <section class="section">
     <h2>Related occupations</h2>
-    <ul class="related"><li><a class="card" href="/occupations/software-developers/"><h3>Software developers</h3><p>15-1252</p></a></li><li><a class="card" href="/occupations/web-developers/"><h3>Web developers</h3><p>15-1254</p></a></li></ul>
+    <ul class="related"><li><a class="card" href="/occupations/software-developers/"><h3>Software developers</h3><p>Austin vs Chicago vs Seattle</p></a></li><li><a class="card" href="/occupations/web-developers/"><h3>Web developers</h3><p>Austin vs Chicago vs Seattle</p></a></li><li><a class="card" href="/occupations/graphic-designers/"><h3>Graphic designers</h3><p>Austin vs Chicago vs Seattle</p></a></li></ul>
   </section>
+  <section class="section faq"><h2>Questions</h2><details><summary>Which WageGrid metro has the highest Data scientists annual median?</summary><p>Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Data Scientists ($164,740). Among metros with a published median: Seattle $164,740, Austin $127,360, Chicago $107,640. WageGrid does not rank suppressed cells or invent a missing wage.</p></details><details><summary>Which WageGrid metro employs the most Data scientists?</summary><p>Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 employment for Data Scientists (8,370 wage-and-salary workers). Published employment: Seattle 8,370, Chicago 7,940, Austin 3,730. Self-employed workers are excluded.</p></details><details><summary>Where are Data scientists most concentrated relative to the national mix?</summary><p>Seattle has the highest published location quotient (2.38). Published LQs: Seattle 2.38, Austin 1.71, Chicago 1.04.</p></details><details><summary>What is the hourly median for Data scientists in each metro?</summary><p>OEWS May 2025 hourly medians: Austin $61.23; Chicago $51.75; Seattle $79.20. Blank means BLS withheld the estimate.</p></details><details><summary>Does this comparison include self-employed workers?</summary><p>No. OEWS covers wage-and-salary workers and excludes the self-employed. WageGrid does not add a self-employment estimate.</p></details></section>
 </div>
 
   </main>

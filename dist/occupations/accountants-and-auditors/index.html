@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Accountants and Auditors wages by metro — WageGrid</title>
-  <meta name="description" content="Compare Accountants and Auditors wages in Austin, Chicago, and Seattle using BLS OEWS May 2025.">
+  <title>Accountants salary: Austin vs Chicago vs Seattle — WageGrid</title>
+  <meta name="description" content="Compare official OEWS May 2025 Accountants and Auditors wages in Austin, Chicago, and Seattle. No invented numbers.">
   <link rel="canonical" href="https://wagegrid.pages.dev/occupations/accountants-and-auditors/">
   <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +14,7 @@
   <script type="application/ld+json">
 [
   {
+    "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
       {
@@ -42,18 +43,42 @@
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "Which WageGrid metro pays Accountants the most?",
+        "name": "Which WageGrid metro has the highest Accountants annual median?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Accountants and Auditors among Austin, Chicago, and Seattle."
+          "text": "Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Accountants and Auditors ($99,370). Among metros with a published median: Seattle $99,370, Austin $83,120, Chicago $82,360. WageGrid does not rank suppressed cells or invent a missing wage."
         }
       },
       {
         "@type": "Question",
-        "name": "Does OEWS publish hourly pay for Accountants?",
+        "name": "Which WageGrid metro employs the most Accountants?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "When BLS publishes hourly mean or median for Accountants and Auditors, WageGrid shows them. Suppressed cells stay blank."
+          "text": "Chicago-Naperville-Elgin, IL-IN has the highest published OEWS May 2025 employment for Accountants and Auditors (41,360 wage-and-salary workers). Published employment: Chicago 41,360, Seattle 22,100, Austin 12,480. Self-employed workers are excluded."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Where are Accountants most concentrated relative to the national mix?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Seattle has the highest published location quotient (1.14). Published LQs: Seattle 1.14, Austin 1.03, Chicago 0.98."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the hourly median for Accountants in each metro?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "OEWS May 2025 hourly medians: Austin $39.96; Chicago $39.60; Seattle $47.78. Blank means BLS withheld the estimate."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does this comparison include self-employed workers?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. OEWS covers wage-and-salary workers and excludes the self-employed. WageGrid does not add a self-employment estimate."
         }
       }
     ]
@@ -77,11 +102,27 @@
 <div class="wrap">
   <header class="page-head">
     <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a> / <a href="/occupations/">Occupations</a> / <a href="/occupations/accountants-and-auditors/">Accountants</a></nav>
-    <p class="kicker">SOC 13-2011</p>
-    <h1>Accountants and Auditors by metro</h1>
-    <p class="lede">May 2025 OEWS comparison for Accountants in Austin, Chicago, and Seattle.</p>
+    <p class="kicker">SOC 13-2011 · May 2025</p>
+    <h1>Accountants salary: Austin vs Chicago vs Seattle</h1>
+    <p class="lede">May 2025 OEWS comparison for Accountants and Auditors in Austin-Round Rock-San Marcos, TX; Chicago-Naperville-Elgin, IL-IN; and Seattle-Tacoma-Bellevue, WA.</p>
   </header>
   <section class="section">
+    <ul class="related"><li><a class="card" href="/metros/austin-round-rock-san-marcos-tx/accountants-and-auditors/">
+              <h3>Austin</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$83,120</p>
+              <p>Employment 12,480 · LQ 1.03</p>
+            </a></li><li><a class="card" href="/metros/chicago-naperville-elgin-il-in/accountants-and-auditors/">
+              <h3>Chicago</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$82,360</p>
+              <p>Employment 41,360 · LQ 0.98</p>
+            </a></li><li><a class="card" href="/metros/seattle-tacoma-bellevue-wa/accountants-and-auditors/">
+              <h3>Seattle</h3>
+              <p class="stat-label">Annual median</p>
+              <p class="stat-value stat-value--card">$99,370</p>
+              <p>Employment 22,100 · LQ 1.14</p>
+            </a></li></ul>
     
 <table>
   <thead>
@@ -91,6 +132,7 @@
       <th class="num">Hourly median</th>
       <th class="num">Annual median</th>
       <th class="num">Annual mean</th>
+      <th class="num">vs highest median</th>
       <th class="num">LQ</th>
     </tr>
   </thead>
@@ -100,6 +142,7 @@
                   <td class="num">$39.96</td>
                   <td class="num">$83,120</td>
                   <td class="num">$91,300</td>
+                  <td class="num">−$16,250</td>
                   <td class="num">1.03</td>
                 </tr><tr>
                   <td><a href="/metros/chicago-naperville-elgin-il-in/accountants-and-auditors/">Chicago</a><div class="muted">Chicago-Naperville-Elgin, IL-IN</div></td>
@@ -107,6 +150,7 @@
                   <td class="num">$39.60</td>
                   <td class="num">$82,360</td>
                   <td class="num">$91,990</td>
+                  <td class="num">−$17,010</td>
                   <td class="num">0.98</td>
                 </tr><tr class="winner">
                   <td><a href="/metros/seattle-tacoma-bellevue-wa/accountants-and-auditors/">Seattle</a><div class="muted">Seattle-Tacoma-Bellevue, WA</div></td>
@@ -114,22 +158,34 @@
                   <td class="num">$47.78</td>
                   <td class="num">$99,370</td>
                   <td class="num">$106,970</td>
+                  <td class="num">highest</td>
                   <td class="num">1.14</td>
                 </tr></tbody>
 </table>
 
-    <div class="note"><p>Seattle has the highest published annual median among the three metros.</p><p>Highlighted row is the highest published annual median (annual mean if median is suppressed).</p></div>
+    <div class="note"><p>Seattle has the highest published annual median among the three metros.</p><p>Highlighted row is the highest published annual median (annual mean if median is suppressed). The vs-highest column is blank when either median is unpublished.</p></div>
     
 <aside class="ad-slot" aria-label="Advertisement">
   <p class="ad-slot__label">Advertisement</p>
   <div class="ad-slot__box" data-ad="adsense-stub"></div>
 </aside>
 
+    
+<aside class="ad-slot ad-slot--affiliate" aria-label="Example affiliate placeholder">
+  <!-- Example affiliate slot: no live partner IDs, no tracking pixels, no affiliate URLs. -->
+  <p class="ad-slot__label">Example affiliate slot</p>
+  <div class="ad-slot__box" data-affiliate="example-placeholder">
+    <p>Placeholder only. No affiliate partners are live on WageGrid.</p>
+  </div>
+</aside>
+
   </section>
+  <section class="section"><h2>Metro vs metro</h2><ul class="compare-points"><li>Austin’s published annual median ($83,120) is $760 higher than Chicago’s ($82,360).</li><li>Seattle’s published annual median ($99,370) is $16,250 higher than Austin’s ($83,120).</li><li>Seattle’s published annual median ($99,370) is $17,010 higher than Chicago’s ($82,360).</li></ul><p class="muted">Gaps are published OEWS annual medians minus published OEWS annual medians. WageGrid does not adjust for cost of living, housing, or taxes.</p></section>
   <section class="section">
     <h2>Related occupations</h2>
-    <ul class="related"><li><a class="card" href="/occupations/marketing-managers/"><h3>Marketing managers</h3><p>11-2021</p></a></li><li><a class="card" href="/occupations/financial-and-investment-analysts/"><h3>Financial analysts</h3><p>13-2051</p></a></li><li><a class="card" href="/occupations/management-analysts/"><h3>Management analysts</h3><p>13-1111</p></a></li></ul>
+    <ul class="related"><li><a class="card" href="/occupations/marketing-managers/"><h3>Marketing managers</h3><p>Austin vs Chicago vs Seattle</p></a></li><li><a class="card" href="/occupations/financial-and-investment-analysts/"><h3>Financial analysts</h3><p>Austin vs Chicago vs Seattle</p></a></li><li><a class="card" href="/occupations/management-analysts/"><h3>Management analysts</h3><p>Austin vs Chicago vs Seattle</p></a></li></ul>
   </section>
+  <section class="section faq"><h2>Questions</h2><details><summary>Which WageGrid metro has the highest Accountants annual median?</summary><p>Seattle-Tacoma-Bellevue, WA has the highest published OEWS May 2025 annual median for Accountants and Auditors ($99,370). Among metros with a published median: Seattle $99,370, Austin $83,120, Chicago $82,360. WageGrid does not rank suppressed cells or invent a missing wage.</p></details><details><summary>Which WageGrid metro employs the most Accountants?</summary><p>Chicago-Naperville-Elgin, IL-IN has the highest published OEWS May 2025 employment for Accountants and Auditors (41,360 wage-and-salary workers). Published employment: Chicago 41,360, Seattle 22,100, Austin 12,480. Self-employed workers are excluded.</p></details><details><summary>Where are Accountants most concentrated relative to the national mix?</summary><p>Seattle has the highest published location quotient (1.14). Published LQs: Seattle 1.14, Austin 1.03, Chicago 0.98.</p></details><details><summary>What is the hourly median for Accountants in each metro?</summary><p>OEWS May 2025 hourly medians: Austin $39.96; Chicago $39.60; Seattle $47.78. Blank means BLS withheld the estimate.</p></details><details><summary>Does this comparison include self-employed workers?</summary><p>No. OEWS covers wage-and-salary workers and excludes the self-employed. WageGrid does not add a self-employment estimate.</p></details></section>
 </div>
 
   </main>
