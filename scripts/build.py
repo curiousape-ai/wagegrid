@@ -989,6 +989,7 @@ Full occupation list: {SITE_URL}/occupations/
         self.build_redirects()
         self.build_sitemap()
         html_pages = len(self.pages)
+        assert_unique_titles(DIST)
         print(f"Built {html_pages} HTML pages into {DIST}")
         return html_pages
 
@@ -1006,6 +1007,23 @@ def faq_ld(faqs: list[dict]) -> dict:
             for item in faqs
         ],
     }
+
+
+def assert_unique_titles(dist: Path) -> None:
+    titles: dict[str, str] = {}
+    for path in sorted(dist.rglob("*.html")):
+        text = path.read_text(encoding="utf-8")
+        start = text.find("<title>")
+        end = text.find("</title>")
+        rel = str(path.relative_to(dist))
+        if start < 0 or end < 0:
+            raise SystemExit(f"Missing HTML title in {rel}")
+        title = text[start + len("<title>") : end].strip()
+        if not title:
+            raise SystemExit(f"Empty HTML title in {rel}")
+        if title in titles:
+            raise SystemExit(f"Duplicate HTML title {title!r}: {titles[title]} and {rel}")
+        titles[title] = rel
 
 
 def main() -> int:
