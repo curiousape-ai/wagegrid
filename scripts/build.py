@@ -347,7 +347,8 @@ class Site:
   <header class="hero">
     <p class="kicker">BLS OEWS · {PERIOD}</p>
     <h1>US occupational wages, compared by metro.</h1>
-    <p class="lede">WageGrid publishes official Occupational Employment and Wage Statistics for Austin, Chicago, and Seattle across 25 occupations. No invented wages. Suppressed BLS cells stay blank.</p>
+    <p class="lede answer">{e(self.home_answer())}</p>
+    {source_line()}
   </header>
   <section class="section">
     <h2>Metros</h2>
@@ -416,13 +417,29 @@ class Site:
             for m in self.metros
         )
         crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/metros/", "Metros")])
+        occ = self.featured_occupation()
+        example_bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                example_bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        example = (
+            f" Example: {occ['title']} published annual medians are {', '.join(example_bits)}."
+            if example_bits
+            else ""
+        )
+        answer = (
+            f"WageGrid republishes BLS OEWS {PERIOD} for Austin, Chicago, and Seattle."
+            f"{example}"
+        )
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">{PERIOD}</p>
     <h1>Metros</h1>
-    <p class="lede">Austin, Chicago, and Seattle as published in OEWS metropolitan area estimates.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <div class="metro-cards">{cards}</div>
 </div>
@@ -443,13 +460,20 @@ class Site:
             for o in self.occupations
         )
         crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/occupations/", "Occupations")])
+        occ = self.featured_occupation()
+        occ_answer = self.occupation_answer(occ)
+        answer = (
+            f"{occ_answer} Open any occupation hub to compare the same OEWS {PERIOD} fields "
+            f"across the three metros."
+        )
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">2018 SOC</p>
     <h1>Occupations</h1>
-    <p class="lede">Compare each detailed occupation across the three WageGrid metros.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <ul class="occ-list">{items}</ul>
 </div>
