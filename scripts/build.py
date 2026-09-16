@@ -859,7 +859,14 @@ class Site:
     def build_robots(self) -> None:
         self.write(
             "robots.txt",
-            f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n",
+            (
+                "User-agent: *\n"
+                "Allow: /\n"
+                "\n"
+                f"Sitemap: {SITE_URL}/sitemap.xml\n"
+                "\n"
+                f"# LLM summary: {SITE_URL}/llms.txt\n"
+            ),
         )
 
     def build_sitemap(self) -> None:
