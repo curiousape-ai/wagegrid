@@ -588,6 +588,7 @@ class Site:
             if winner
             else "<p>No metro in this slice has a published annual wage for ranking.</p>"
         )
+        answer = self.occupation_answer(occ)
         faqs = [
             {
                 "q": f"Which WageGrid metro pays {occ['short_title']} the most?",
@@ -612,7 +613,8 @@ class Site:
     {crumbs}
     <p class="kicker">SOC {e(occ['soc'])}</p>
     <h1>{e(occ['title'])} by metro</h1>
-    <p class="lede">{PERIOD} OEWS comparison for {e(occ['short_title'])} in Austin, Chicago, and Seattle.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     {table}
