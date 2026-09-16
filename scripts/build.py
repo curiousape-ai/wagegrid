@@ -231,6 +231,16 @@ class Site:
             return f"OEWS {PERIOD} annual median not published"
         return f"OEWS {PERIOD} annual median {plain_year(median)}"
 
+    def occupation_card_line(self, occ: dict) -> str:
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        if not bits:
+            return f"SOC {occ['soc']} · no published annual median in this slice"
+        return f"SOC {occ['soc']} · {', '.join(bits)}"
+
     def metro_hub_faqs(self, metro: dict) -> list[dict]:
         occ, obs = self.example_row(metro)
         example = (
@@ -584,7 +594,7 @@ class Site:
 
     def build_metro(self, metro: dict) -> None:
         others = "".join(
-            f'<li><a class="card" href="/metros/{e(m["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(m["name"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(m["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(self.median_card_line(self.row(m, self.featured_occupation())))} for {e(self.featured_occupation()["short_title"])}</p></a></li>'
             for m in self.metros
             if m["slug"] != metro["slug"]
         )
@@ -668,7 +678,7 @@ class Site:
     def build_occupation(self, occ: dict) -> None:
         table, winner = self.occ_compare_table(occ)
         related = "".join(
-            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(o["soc"])}</p></a></li>'
+            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(self.occupation_card_line(o))}</p></a></li>'
             for o in self.related_occs(occ)
         )
         crumbs, crumb_ld = self.crumbs(
@@ -765,11 +775,11 @@ class Site:
                 </tr>"""
             )
         related = "".join(
-            f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>In {e(metro["short_name"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(self.median_card_line(self.row(metro, o)))} in {e(metro["short_name"])}</p></a></li>'
             for o in self.related_occs(occ)
         )
         other_metros = "".join(
-            f'<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(occ["short_title"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(self.median_card_line(self.row(m, occ)))}</p></a></li>'
             for m in self.metros
             if m["slug"] != metro["slug"]
         )
