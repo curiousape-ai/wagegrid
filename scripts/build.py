@@ -422,6 +422,7 @@ class Site:
     <p>Each metro × occupation page shows employment, mean and median wages, and the location quotient from OEWS {PERIOD}. Hourly figures are omitted when BLS publishes the occupation annual-only (common for teachers). Compare the same job across the three metros, or switch occupations inside one metro.</p>
     {self.ad_slot()}
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -503,6 +504,7 @@ class Site:
     {source_line()}
   </header>
   <div class="metro-cards">{cards}</div>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -538,6 +540,7 @@ class Site:
     {source_line()}
   </header>
   <ul class="occ-list">{items}</ul>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -607,6 +610,7 @@ class Site:
     <h2>Other metros</h2>
     <ul class="related">{others}</ul>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -709,6 +713,7 @@ class Site:
     <h2>Related occupations</h2>
     <ul class="related">{related}</ul>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -829,6 +834,7 @@ class Site:
     <ul class="related">{related}</ul>
     <p><a href="/metros/{e(metro['slug'])}/">All occupations in {e(metro['short_name'])}</a> · <a href="/occupations/{e(occ['slug'])}/">All metros for {e(occ['short_title'])}</a></p>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
