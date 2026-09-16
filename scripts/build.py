@@ -231,6 +231,64 @@ class Site:
             return f"OEWS {PERIOD} annual median not published"
         return f"OEWS {PERIOD} annual median {plain_year(median)}"
 
+    def metro_hub_faqs(self, metro: dict) -> list[dict]:
+        occ, obs = self.example_row(metro)
+        example = (
+            f" Example: {occ['title']} have a published annual median of "
+            f"{plain_year(obs['annual_median'])}."
+            if obs.get("annual_median") is not None
+            else " WageGrid leaves BLS suppressions blank."
+        )
+        return [
+            {
+                "q": f"What wages does this {metro['short_name']} page cover?",
+                "a": (
+                    f"This page republishes BLS OEWS {PERIOD} wage and employment estimates "
+                    f"for {len(self.occupations)} occupations in {metro['name']} "
+                    f"(area {metro['area_code']}).{example}"
+                ),
+            },
+            {
+                "q": "Does WageGrid invent missing wages?",
+                "a": (
+                    "No. Every dollar amount is an official OEWS estimate. "
+                    "BLS suppressions stay blank. WageGrid does not interpolate."
+                ),
+            },
+            advice_faq(),
+        ]
+
+    def site_hub_faqs(self) -> list[dict]:
+        occ = self.featured_occupation()
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        example = (
+            f" Example published annual medians for {occ['title']}: {', '.join(bits)}."
+            if bits
+            else ""
+        )
+        return [
+            {
+                "q": "What wages does WageGrid publish?",
+                "a": (
+                    f"WageGrid republishes BLS OEWS {PERIOD} estimates for "
+                    f"{len(self.occupations)} occupations in Austin, Chicago, and Seattle."
+                    f"{example}"
+                ),
+            },
+            {
+                "q": "Does WageGrid invent missing wages?",
+                "a": (
+                    "No. Every dollar amount is an official OEWS estimate. "
+                    "BLS suppressions stay blank. Cite BLS OEWS when quoting a figure."
+                ),
+            },
+            advice_faq(),
+        ]
+
     def write(self, rel: str, content: str) -> None:
         path = DIST / rel
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -527,6 +585,7 @@ class Site:
             [("/", "Home"), ("/metros/", "Metros"), (f"/metros/{metro['slug']}/", metro["short_name"])]
         )
         answer = self.metro_answer(metro)
+        faqs = self.metro_hub_faqs(metro)
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -553,7 +612,7 @@ class Site:
             f"metros/{metro['slug']}/index.html",
             f"{SITE_URL}/metros/{metro['slug']}/",
             current="metros",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def occ_compare_table(self, occ: dict) -> tuple[str, dict | None]:
