@@ -400,6 +400,7 @@ class Site:
             f'<li><a href="/occupations/{e(o["slug"])}/">{e(o["short_title"])}</a><span class="soc">{e(o["soc"])}</span></li>'
             for o in self.occupations
         )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="hero">
@@ -430,6 +431,7 @@ class Site:
             "index.html",
             f"{SITE_URL}/",
             current="home",
+            json_ld=[faq_ld(faqs)],
         )
 
     def build_about(self) -> None:
@@ -490,6 +492,7 @@ class Site:
             f"WageGrid republishes BLS OEWS {PERIOD} for Austin, Chicago, and Seattle."
             f"{example}"
         )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -509,7 +512,7 @@ class Site:
             "metros/index.html",
             f"{SITE_URL}/metros/",
             current="metros",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def build_occ_index(self) -> None:
@@ -524,6 +527,7 @@ class Site:
             f"{occ_answer} Open any occupation hub to compare the same OEWS {PERIOD} fields "
             f"across the three metros."
         )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -543,7 +547,7 @@ class Site:
             "occupations/index.html",
             f"{SITE_URL}/occupations/",
             current="occupations",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def metro_table(self, metro: dict) -> str:
