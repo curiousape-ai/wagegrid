@@ -502,13 +502,15 @@ class Site:
         crumbs, crumb_ld = self.crumbs(
             [("/", "Home"), ("/metros/", "Metros"), (f"/metros/{metro['slug']}/", metro["short_name"])]
         )
+        answer = self.metro_answer(metro)
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">OEWS area {e(metro['area_code'])}</p>
     <h1>{e(metro['name'])} wages</h1>
-    <p class="lede">{PERIOD} occupational employment and wage estimates for {e(metro['short_name'])}.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     {self.metro_table(metro)}
