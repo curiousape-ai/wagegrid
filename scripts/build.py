@@ -22,6 +22,13 @@ PERIOD = "May 2025"
 CITATION = (
     "U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025."
 )
+BLS_OES = "https://www.bls.gov/oes/"
+ADVICE = (
+    "These figures are informational republications of BLS OEWS. "
+    "They are not legal, career, or hiring advice."
+)
+# Catalog order, not a search ranking or invented volume.
+LLMS_OCCUPATION_HUBS = 8
 
 RELATED_GROUPS = (
     ("15-1252", "15-2051", "15-1254"),
@@ -84,6 +91,32 @@ def annual_only(occ: dict, row: dict) -> bool:
     return hourly_missing and annual_present
 
 
+def source_line() -> str:
+    return (
+        '<p class="source-line">'
+        f"Source: {e(CITATION)} "
+        f'<a href="{BLS_OES}">bls.gov/oes</a>. {e(ADVICE)}'
+        "</p>"
+    )
+
+
+def faq_section(faqs: list[dict]) -> str:
+    if not faqs:
+        return ""
+    items = "".join(
+        f"<details><summary>{e(item['q'])}</summary><p>{e(item['a'])}</p></details>"
+        for item in faqs
+    )
+    return f'<section class="section faq"><h2>Questions</h2>{items}</section>'
+
+
+def advice_faq() -> dict:
+    return {
+        "q": "Is this legal or career advice?",
+        "a": ADVICE + " Cite BLS OEWS when quoting a wage.",
+    }
+
+
 class Site:
     def __init__(self) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
@@ -106,6 +139,97 @@ class Site:
             others = [o["soc"] for o in self.occupations if o["soc"] != occ["soc"]][:4]
         found = [o for o in self.occupations if o["soc"] in others]
         return found[:4]
+
+    def featured_occupation(self) -> dict:
+        """First catalog occupation. Catalog order, not a ranking."""
+        return self.occupations[0]
+
+    def example_row(self, metro: dict) -> tuple[dict, dict]:
+        occ = self.featured_occupation()
+        obs = self.row(metro, occ)
+        if obs.get("annual_median") is not None:
+            return occ, obs
+        for candidate in self.occupations:
+            row = self.row(metro, candidate)
+            if row.get("annual_median") is not None:
+                return candidate, row
+        return occ, obs
+
+    def pair_answer(self, metro: dict, occ: dict, obs: dict) -> str:
+        if obs.get("annual_median") is not None:
+            return (
+                f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} "
+                f"is {plain_year(obs['annual_median'])}."
+            )
+        if obs.get("annual_mean") is not None:
+            return (
+                f"BLS did not publish an annual median for {occ['title']} in {metro['name']} "
+                f"in OEWS {PERIOD}. The published annual mean is {plain_year(obs['annual_mean'])}."
+            )
+        return (
+            f"BLS did not publish an annual wage for {occ['title']} in {metro['name']} "
+            f"in OEWS {PERIOD}."
+        )
+
+    def metro_answer(self, metro: dict) -> str:
+        occ, obs = self.example_row(metro)
+        if obs.get("annual_median") is not None:
+            return (
+                f"In {metro['name']}, {occ['title']} have a published OEWS {PERIOD} "
+                f"annual median of {plain_year(obs['annual_median'])} (wage-and-salary workers). "
+                f"The table lists {len(self.occupations)} occupations from the same survey."
+            )
+        return (
+            f"OEWS {PERIOD} metropolitan estimates for {metro['name']} "
+            f"(area {metro['area_code']}). WageGrid does not invent missing wages."
+        )
+
+    def occupation_answer(self, occ: dict) -> str:
+        published = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                published.append((metro, obs))
+        if not published:
+            return (
+                f"OEWS {PERIOD} does not publish an annual median for {occ['title']} "
+                f"in Austin, Chicago, or Seattle."
+            )
+        ranked = sorted(published, key=lambda item: item[1]["annual_median"], reverse=True)
+        best_metro, best_obs = ranked[0]
+        listing = ", ".join(
+            f"{metro['short_name']} {plain_year(obs['annual_median'])}" for metro, obs in ranked
+        )
+        return (
+            f"Among Austin, Chicago, and Seattle, {occ['title']} have a published OEWS {PERIOD} "
+            f"annual median of {plain_year(best_obs['annual_median'])} in {best_metro['short_name']}, "
+            f"the highest in this slice. Published medians: {listing}."
+        )
+
+    def home_answer(self) -> str:
+        occ = self.featured_occupation()
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{plain_year(obs['annual_median'])} in {metro['short_name']}")
+        if not bits:
+            return (
+                f"WageGrid republishes BLS OEWS {PERIOD} estimates for "
+                f"{len(self.occupations)} occupations in {len(self.metros)} metros. "
+                "It does not invent wages."
+            )
+        return (
+            f"In BLS OEWS {PERIOD}, {occ['title']} have published annual medians of "
+            f"{', '.join(bits)}. WageGrid republishes those estimates for "
+            f"{len(self.occupations)} occupations in {len(self.metros)} metros and does not invent wages."
+        )
+
+    def median_card_line(self, obs: dict) -> str:
+        median = obs.get("annual_median")
+        if median is None:
+            return f"OEWS {PERIOD} annual median not published"
+        return f"OEWS {PERIOD} annual median {plain_year(median)}"
 
     def write(self, rel: str, content: str) -> None:
         path = DIST / rel
@@ -561,14 +685,11 @@ class Site:
             if only_annual
             else ""
         )
+        answer = self.pair_answer(metro, occ, obs)
         faqs = [
             {
                 "q": f"What is the median wage for {occ['short_title']} in {metro['short_name']}?",
-                "a": (
-                    f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} is {plain_year(obs.get('annual_median'))}."
-                    if obs.get("annual_median") is not None
-                    else f"BLS did not publish an annual median for {occ['title']} in {metro['name']} in OEWS {PERIOD}."
-                ),
+                "a": answer,
             },
             {
                 "q": f"How many {occ['short_title']} work in {metro['short_name']}?",
@@ -589,7 +710,8 @@ class Site:
     {crumbs}
     <p class="kicker">{e(metro['name'])} · SOC {e(occ['soc'])}</p>
     <h1>{e(occ['title'])} wages in {e(metro['short_name'])}</h1>
-    <p class="lede">Official OEWS {PERIOD} estimates for {e(occ['short_title'])} in {e(metro['name'])}.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     <div class="stat-row">{stat_html}</div>
