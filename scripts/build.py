@@ -877,31 +877,50 @@ class Site:
         self.write("sitemap.xml", xml)
 
     def build_llms(self) -> None:
-        metro_lines = "\n".join(f"- {m['name']} (`{m['area_code']}`): /metros/{m['slug']}/" for m in self.metros)
-        occ_lines = "\n".join(f"- {o['title']} (`{o['soc']}`): /occupations/{o['slug']}/" for o in self.occupations)
+        metro_lines = "\n".join(
+            f"- [{m['name']}]({SITE_URL}/metros/{m['slug']}/) (OEWS area `{m['area_code']}`)"
+            for m in self.metros
+        )
+        occ_lines = "\n".join(
+            f"- [{o['title']}]({SITE_URL}/occupations/{o['slug']}/) (`{o['soc']}`)"
+            for o in self.occupations[:LLMS_OCCUPATION_HUBS]
+        )
         text = f"""# {SITE_NAME}
 
 > US occupational wages by metro, from BLS OEWS {PERIOD}.
 
-WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+WageGrid is a static slice: Austin, Chicago, and Seattle × {len(self.occupations)} occupations. Every wage is an official OEWS estimate. Suppressed cells are blank. OEWS covers wage-and-salary workers and excludes the self-employed.
 
 Citation: {CITATION}
+Survey: {BLS_OES}
 
-## Metros
+{ADVICE}
+
+## Start here
+
+- [Home]({SITE_URL}/)
+- [About / methodology]({SITE_URL}/about/)
+- [Metros]({SITE_URL}/metros/)
+- [Occupations]({SITE_URL}/occupations/)
+
+## Metro hubs
 
 {metro_lines}
 
-## Occupations
+## Occupation hubs (catalog order)
+
+The list below is the first {LLMS_OCCUPATION_HUBS} occupations in the catalog, not a search ranking or traffic claim.
 
 {occ_lines}
 
-## Pages
+Full occupation list: {SITE_URL}/occupations/
 
-- Home: /
-- About / methodology: /about/
-- Metro × occupation pages: /metros/{{metro}}/{{occupation}}/
+## How to cite
 
-Do not invent wages that are not on these pages.
+- Quote only a figure that appears on the linked page.
+- Name BLS OEWS {PERIOD} as the source.
+- Do not invent wages, fill suppressions, or convert annual-only occupations to hourly.
+- Do not treat these pages as legal, career, or hiring advice.
 """
         self.write("llms.txt", text)
 
