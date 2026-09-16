@@ -2,48 +2,44 @@
 
 > US occupational wages by metro, from BLS OEWS May 2025.
 
-WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+WageGrid is a static slice: Austin, Chicago, and Seattle × 25 occupations. Every wage is an official OEWS estimate. Suppressed cells are blank. OEWS covers wage-and-salary workers and excludes the self-employed.
 
 Citation: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025.
+Survey: https://www.bls.gov/oes/
 
-## Metros
+These figures are informational republications of BLS OEWS. They are not legal, career, or hiring advice.
 
-- Austin-Round Rock-San Marcos, TX (`12420`): /metros/austin-round-rock-san-marcos-tx/
-- Chicago-Naperville-Elgin, IL-IN (`16980`): /metros/chicago-naperville-elgin-il-in/
-- Seattle-Tacoma-Bellevue, WA (`42660`): /metros/seattle-tacoma-bellevue-wa/
+## Start here
 
-## Occupations
+- [Home](https://wagegrid.pages.dev/)
+- [About / methodology](https://wagegrid.pages.dev/about/)
+- [Metros](https://wagegrid.pages.dev/metros/)
+- [Occupations](https://wagegrid.pages.dev/occupations/)
 
-- Software Developers (`15-1252`): /occupations/software-developers/
-- Registered Nurses (`29-1141`): /occupations/registered-nurses/
-- Accountants and Auditors (`13-2011`): /occupations/accountants-and-auditors/
-- Electricians (`47-2111`): /occupations/electricians/
-- Plumbers, Pipefitters, and Steamfitters (`47-2152`): /occupations/plumbers-pipefitters-and-steamfitters/
-- Heavy and Tractor-Trailer Truck Drivers (`53-3032`): /occupations/heavy-and-tractor-trailer-truck-drivers/
-- First-Line Supervisors of Retail Sales Workers (`41-1011`): /occupations/retail-supervisors/
-- Marketing Managers (`11-2021`): /occupations/marketing-managers/
-- Data Scientists (`15-2051`): /occupations/data-scientists/
-- Civil Engineers (`17-2051`): /occupations/civil-engineers/
-- Elementary School Teachers, Except Special Education (`25-2021`): /occupations/elementary-school-teachers/
-- Police and Sheriff's Patrol Officers (`33-3051`): /occupations/police-and-sheriffs-patrol-officers/
-- Chefs and Head Cooks (`35-1011`): /occupations/chefs-and-head-cooks/
-- Bartenders (`35-3011`): /occupations/bartenders/
-- Construction Laborers (`47-2061`): /occupations/construction-laborers/
-- Heating, Air Conditioning, and Refrigeration Mechanics and Installers (`49-9021`): /occupations/hvac-mechanics-and-installers/
-- Dental Hygienists (`29-1292`): /occupations/dental-hygienists/
-- Physical Therapists (`29-1123`): /occupations/physical-therapists/
-- Web Developers (`15-1254`): /occupations/web-developers/
-- Financial and Investment Analysts (`13-2051`): /occupations/financial-and-investment-analysts/
-- Management Analysts (`13-1111`): /occupations/management-analysts/
-- Graphic Designers (`27-1024`): /occupations/graphic-designers/
-- Child, Family, and School Social Workers (`21-1021`): /occupations/child-family-and-school-social-workers/
-- Carpenters (`47-2031`): /occupations/carpenters/
-- Medical Assistants (`31-9092`): /occupations/medical-assistants/
+## Metro hubs
 
-## Pages
+- [Austin-Round Rock-San Marcos, TX](https://wagegrid.pages.dev/metros/austin-round-rock-san-marcos-tx/) (OEWS area `12420`)
+- [Chicago-Naperville-Elgin, IL-IN](https://wagegrid.pages.dev/metros/chicago-naperville-elgin-il-in/) (OEWS area `16980`)
+- [Seattle-Tacoma-Bellevue, WA](https://wagegrid.pages.dev/metros/seattle-tacoma-bellevue-wa/) (OEWS area `42660`)
 
-- Home: /
-- About / methodology: /about/
-- Metro × occupation pages: /metros/{metro}/{occupation}/
+## Occupation hubs (catalog order)
 
-Do not invent wages that are not on these pages.
+The list below is the first 8 occupations in the catalog, not a search ranking or traffic claim.
+
+- [Software Developers](https://wagegrid.pages.dev/occupations/software-developers/) (`15-1252`)
+- [Registered Nurses](https://wagegrid.pages.dev/occupations/registered-nurses/) (`29-1141`)
+- [Accountants and Auditors](https://wagegrid.pages.dev/occupations/accountants-and-auditors/) (`13-2011`)
+- [Electricians](https://wagegrid.pages.dev/occupations/electricians/) (`47-2111`)
+- [Plumbers, Pipefitters, and Steamfitters](https://wagegrid.pages.dev/occupations/plumbers-pipefitters-and-steamfitters/) (`47-2152`)
+- [Heavy and Tractor-Trailer Truck Drivers](https://wagegrid.pages.dev/occupations/heavy-and-tractor-trailer-truck-drivers/) (`53-3032`)
+- [First-Line Supervisors of Retail Sales Workers](https://wagegrid.pages.dev/occupations/retail-supervisors/) (`41-1011`)
+- [Marketing Managers](https://wagegrid.pages.dev/occupations/marketing-managers/) (`11-2021`)
+
+Full occupation list: https://wagegrid.pages.dev/occupations/
+
+## How to cite
+
+- Quote only a figure that appears on the linked page.
+- Name BLS OEWS May 2025 as the source.
+- Do not invent wages, fill suppressions, or convert annual-only occupations to hourly.
+- Do not treat these pages as legal, career, or hiring advice.

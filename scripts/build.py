@@ -22,6 +22,13 @@ PERIOD = "May 2025"
 CITATION = (
     "U.S. Bureau of Labor Statistics, Occupational Employment and Wage Statistics, May 2025."
 )
+BLS_OES = "https://www.bls.gov/oes/"
+ADVICE = (
+    "These figures are informational republications of BLS OEWS. "
+    "They are not legal, career, or hiring advice."
+)
+# Catalog order, not a search ranking or invented volume.
+LLMS_OCCUPATION_HUBS = 8
 
 RELATED_GROUPS = (
     ("15-1252", "15-2051", "15-1254"),
@@ -84,6 +91,32 @@ def annual_only(occ: dict, row: dict) -> bool:
     return hourly_missing and annual_present
 
 
+def source_line() -> str:
+    return (
+        '<p class="source-line">'
+        f"Source: {e(CITATION)} "
+        f'<a href="{BLS_OES}">bls.gov/oes</a>. {e(ADVICE)}'
+        "</p>"
+    )
+
+
+def faq_section(faqs: list[dict]) -> str:
+    if not faqs:
+        return ""
+    items = "".join(
+        f"<details><summary>{e(item['q'])}</summary><p>{e(item['a'])}</p></details>"
+        for item in faqs
+    )
+    return f'<section class="section faq"><h2>Questions</h2>{items}</section>'
+
+
+def advice_faq() -> dict:
+    return {
+        "q": "Is this legal or career advice?",
+        "a": ADVICE + " Cite BLS OEWS when quoting a wage.",
+    }
+
+
 class Site:
     def __init__(self) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
@@ -106,6 +139,165 @@ class Site:
             others = [o["soc"] for o in self.occupations if o["soc"] != occ["soc"]][:4]
         found = [o for o in self.occupations if o["soc"] in others]
         return found[:4]
+
+    def featured_occupation(self) -> dict:
+        """First catalog occupation. Catalog order, not a ranking."""
+        return self.occupations[0]
+
+    def example_row(self, metro: dict) -> tuple[dict, dict]:
+        occ = self.featured_occupation()
+        obs = self.row(metro, occ)
+        if obs.get("annual_median") is not None:
+            return occ, obs
+        for candidate in self.occupations:
+            row = self.row(metro, candidate)
+            if row.get("annual_median") is not None:
+                return candidate, row
+        return occ, obs
+
+    def pair_answer(self, metro: dict, occ: dict, obs: dict) -> str:
+        if obs.get("annual_median") is not None:
+            return (
+                f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} "
+                f"is {plain_year(obs['annual_median'])}."
+            )
+        if obs.get("annual_mean") is not None:
+            return (
+                f"BLS did not publish an annual median for {occ['title']} in {metro['name']} "
+                f"in OEWS {PERIOD}. The published annual mean is {plain_year(obs['annual_mean'])}."
+            )
+        return (
+            f"BLS did not publish an annual wage for {occ['title']} in {metro['name']} "
+            f"in OEWS {PERIOD}."
+        )
+
+    def metro_answer(self, metro: dict) -> str:
+        occ, obs = self.example_row(metro)
+        if obs.get("annual_median") is not None:
+            return (
+                f"In {metro['name']}, {occ['title']} have a published OEWS {PERIOD} "
+                f"annual median of {plain_year(obs['annual_median'])} (wage-and-salary workers). "
+                f"The table lists {len(self.occupations)} occupations from the same survey."
+            )
+        return (
+            f"OEWS {PERIOD} metropolitan estimates for {metro['name']} "
+            f"(area {metro['area_code']}). WageGrid does not invent missing wages."
+        )
+
+    def occupation_answer(self, occ: dict) -> str:
+        published = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                published.append((metro, obs))
+        if not published:
+            return (
+                f"OEWS {PERIOD} does not publish an annual median for {occ['title']} "
+                f"in Austin, Chicago, or Seattle."
+            )
+        ranked = sorted(published, key=lambda item: item[1]["annual_median"], reverse=True)
+        best_metro, best_obs = ranked[0]
+        listing = ", ".join(
+            f"{metro['short_name']} {plain_year(obs['annual_median'])}" for metro, obs in ranked
+        )
+        return (
+            f"Among Austin, Chicago, and Seattle, {occ['title']} have a published OEWS {PERIOD} "
+            f"annual median of {plain_year(best_obs['annual_median'])} in {best_metro['short_name']}, "
+            f"the highest in this slice. Published medians: {listing}."
+        )
+
+    def home_answer(self) -> str:
+        occ = self.featured_occupation()
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{plain_year(obs['annual_median'])} in {metro['short_name']}")
+        if not bits:
+            return (
+                f"WageGrid republishes BLS OEWS {PERIOD} estimates for "
+                f"{len(self.occupations)} occupations in {len(self.metros)} metros. "
+                "It does not invent wages."
+            )
+        return (
+            f"In BLS OEWS {PERIOD}, {occ['title']} have published annual medians of "
+            f"{', '.join(bits)}. WageGrid republishes those estimates for "
+            f"{len(self.occupations)} occupations in {len(self.metros)} metros and does not invent wages."
+        )
+
+    def median_card_line(self, obs: dict) -> str:
+        median = obs.get("annual_median")
+        if median is None:
+            return f"OEWS {PERIOD} annual median not published"
+        return f"OEWS {PERIOD} annual median {plain_year(median)}"
+
+    def occupation_card_line(self, occ: dict) -> str:
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        if not bits:
+            return f"SOC {occ['soc']} · no published annual median in this slice"
+        return f"SOC {occ['soc']} · {', '.join(bits)}"
+
+    def metro_hub_faqs(self, metro: dict) -> list[dict]:
+        occ, obs = self.example_row(metro)
+        example = (
+            f" Example: {occ['title']} have a published annual median of "
+            f"{plain_year(obs['annual_median'])}."
+            if obs.get("annual_median") is not None
+            else " WageGrid leaves BLS suppressions blank."
+        )
+        return [
+            {
+                "q": f"What wages does this {metro['short_name']} page cover?",
+                "a": (
+                    f"This page republishes BLS OEWS {PERIOD} wage and employment estimates "
+                    f"for {len(self.occupations)} occupations in {metro['name']} "
+                    f"(area {metro['area_code']}).{example}"
+                ),
+            },
+            {
+                "q": "Does WageGrid invent missing wages?",
+                "a": (
+                    "No. Every dollar amount is an official OEWS estimate. "
+                    "BLS suppressions stay blank. WageGrid does not interpolate."
+                ),
+            },
+            advice_faq(),
+        ]
+
+    def site_hub_faqs(self) -> list[dict]:
+        occ = self.featured_occupation()
+        bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        example = (
+            f" Example published annual medians for {occ['title']}: {', '.join(bits)}."
+            if bits
+            else ""
+        )
+        return [
+            {
+                "q": "What wages does WageGrid publish?",
+                "a": (
+                    f"WageGrid republishes BLS OEWS {PERIOD} estimates for "
+                    f"{len(self.occupations)} occupations in Austin, Chicago, and Seattle."
+                    f"{example}"
+                ),
+            },
+            {
+                "q": "Does WageGrid invent missing wages?",
+                "a": (
+                    "No. Every dollar amount is an official OEWS estimate. "
+                    "BLS suppressions stay blank. Cite BLS OEWS when quoting a figure."
+                ),
+            },
+            advice_faq(),
+        ]
 
     def write(self, rel: str, content: str) -> None:
         path = DIST / rel
@@ -218,12 +410,14 @@ class Site:
             f'<li><a href="/occupations/{e(o["slug"])}/">{e(o["short_title"])}</a><span class="soc">{e(o["soc"])}</span></li>'
             for o in self.occupations
         )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="hero">
     <p class="kicker">BLS OEWS · {PERIOD}</p>
     <h1>US occupational wages, compared by metro.</h1>
-    <p class="lede">WageGrid publishes official Occupational Employment and Wage Statistics for Austin, Chicago, and Seattle across 25 occupations. No invented wages. Suppressed BLS cells stay blank.</p>
+    <p class="lede answer">{e(self.home_answer())}</p>
+    {source_line()}
   </header>
   <section class="section">
     <h2>Metros</h2>
@@ -238,6 +432,7 @@ class Site:
     <p>Each metro × occupation page shows employment, mean and median wages, and the location quotient from OEWS {PERIOD}. Hourly figures are omitted when BLS publishes the occupation annual-only (common for teachers). Compare the same job across the three metros, or switch occupations inside one metro.</p>
     {self.ad_slot()}
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -247,6 +442,7 @@ class Site:
             "index.html",
             f"{SITE_URL}/",
             current="home",
+            json_ld=[faq_ld(faqs)],
         )
 
     def build_about(self) -> None:
@@ -292,15 +488,33 @@ class Site:
             for m in self.metros
         )
         crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/metros/", "Metros")])
+        occ = self.featured_occupation()
+        example_bits = []
+        for metro in self.metros:
+            obs = self.row(metro, occ)
+            if obs.get("annual_median") is not None:
+                example_bits.append(f"{metro['short_name']} {plain_year(obs['annual_median'])}")
+        example = (
+            f" Example: {occ['title']} published annual medians are {', '.join(example_bits)}."
+            if example_bits
+            else ""
+        )
+        answer = (
+            f"WageGrid republishes BLS OEWS {PERIOD} for Austin, Chicago, and Seattle."
+            f"{example}"
+        )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">{PERIOD}</p>
     <h1>Metros</h1>
-    <p class="lede">Austin, Chicago, and Seattle as published in OEWS metropolitan area estimates.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <div class="metro-cards">{cards}</div>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -310,7 +524,7 @@ class Site:
             "metros/index.html",
             f"{SITE_URL}/metros/",
             current="metros",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def build_occ_index(self) -> None:
@@ -319,15 +533,24 @@ class Site:
             for o in self.occupations
         )
         crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/occupations/", "Occupations")])
+        occ = self.featured_occupation()
+        occ_answer = self.occupation_answer(occ)
+        answer = (
+            f"{occ_answer} Open any occupation hub to compare the same OEWS {PERIOD} fields "
+            f"across the three metros."
+        )
+        faqs = self.site_hub_faqs()
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">2018 SOC</p>
     <h1>Occupations</h1>
-    <p class="lede">Compare each detailed occupation across the three WageGrid metros.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <ul class="occ-list">{items}</ul>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -337,7 +560,7 @@ class Site:
             "occupations/index.html",
             f"{SITE_URL}/occupations/",
             current="occupations",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def metro_table(self, metro: dict) -> str:
@@ -371,20 +594,23 @@ class Site:
 
     def build_metro(self, metro: dict) -> None:
         others = "".join(
-            f'<li><a class="card" href="/metros/{e(m["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(m["name"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(m["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(self.median_card_line(self.row(m, self.featured_occupation())))} for {e(self.featured_occupation()["short_title"])}</p></a></li>'
             for m in self.metros
             if m["slug"] != metro["slug"]
         )
         crumbs, crumb_ld = self.crumbs(
             [("/", "Home"), ("/metros/", "Metros"), (f"/metros/{metro['slug']}/", metro["short_name"])]
         )
+        answer = self.metro_answer(metro)
+        faqs = self.metro_hub_faqs(metro)
         body = f"""
 <div class="wrap">
   <header class="page-head">
     {crumbs}
     <p class="kicker">OEWS area {e(metro['area_code'])}</p>
     <h1>{e(metro['name'])} wages</h1>
-    <p class="lede">{PERIOD} occupational employment and wage estimates for {e(metro['short_name'])}.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     {self.metro_table(metro)}
@@ -394,6 +620,7 @@ class Site:
     <h2>Other metros</h2>
     <ul class="related">{others}</ul>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -403,7 +630,7 @@ class Site:
             f"metros/{metro['slug']}/index.html",
             f"{SITE_URL}/metros/{metro['slug']}/",
             current="metros",
-            json_ld=[crumb_ld],
+            json_ld=[crumb_ld, faq_ld(faqs)],
         )
 
     def occ_compare_table(self, occ: dict) -> tuple[str, dict | None]:
@@ -451,7 +678,7 @@ class Site:
     def build_occupation(self, occ: dict) -> None:
         table, winner = self.occ_compare_table(occ)
         related = "".join(
-            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(o["soc"])}</p></a></li>'
+            f'<li><a class="card" href="/occupations/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(self.occupation_card_line(o))}</p></a></li>'
             for o in self.related_occs(occ)
         )
         crumbs, crumb_ld = self.crumbs(
@@ -462,14 +689,11 @@ class Site:
             if winner
             else "<p>No metro in this slice has a published annual wage for ranking.</p>"
         )
+        answer = self.occupation_answer(occ)
         faqs = [
             {
-                "q": f"Which WageGrid metro pays {occ['short_title']} the most?",
-                "a": (
-                    f"{winner['name']} has the highest published OEWS {PERIOD} annual median for {occ['title']} among Austin, Chicago, and Seattle."
-                    if winner
-                    else f"OEWS {PERIOD} does not publish enough annual wages to rank {occ['title']} across these metros."
-                ),
+                "q": f"Which WageGrid metro has the highest published {occ['short_title']} annual median?",
+                "a": answer,
             },
             {
                 "q": f"Does OEWS publish hourly pay for {occ['short_title']}?",
@@ -479,6 +703,7 @@ class Site:
                     else f"When BLS publishes hourly mean or median for {occ['title']}, WageGrid shows them. Suppressed cells stay blank."
                 ),
             },
+            advice_faq(),
         ]
         body = f"""
 <div class="wrap">
@@ -486,7 +711,8 @@ class Site:
     {crumbs}
     <p class="kicker">SOC {e(occ['soc'])}</p>
     <h1>{e(occ['title'])} by metro</h1>
-    <p class="lede">{PERIOD} OEWS comparison for {e(occ['short_title'])} in Austin, Chicago, and Seattle.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     {table}
@@ -497,6 +723,7 @@ class Site:
     <h2>Related occupations</h2>
     <ul class="related">{related}</ul>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -548,11 +775,11 @@ class Site:
                 </tr>"""
             )
         related = "".join(
-            f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>In {e(metro["short_name"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(metro["slug"])}/{e(o["slug"])}/"><h3>{e(o["short_title"])}</h3><p>{e(self.median_card_line(self.row(metro, o)))} in {e(metro["short_name"])}</p></a></li>'
             for o in self.related_occs(occ)
         )
         other_metros = "".join(
-            f'<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(occ["short_title"])}</p></a></li>'
+            f'<li><a class="card" href="/metros/{e(m["slug"])}/{e(occ["slug"])}/"><h3>{e(m["short_name"])}</h3><p>{e(self.median_card_line(self.row(m, occ)))}</p></a></li>'
             for m in self.metros
             if m["slug"] != metro["slug"]
         )
@@ -561,14 +788,11 @@ class Site:
             if only_annual
             else ""
         )
+        answer = self.pair_answer(metro, occ, obs)
         faqs = [
             {
                 "q": f"What is the median wage for {occ['short_title']} in {metro['short_name']}?",
-                "a": (
-                    f"The OEWS {PERIOD} annual median for {occ['title']} in {metro['name']} is {plain_year(obs.get('annual_median'))}."
-                    if obs.get("annual_median") is not None
-                    else f"BLS did not publish an annual median for {occ['title']} in {metro['name']} in OEWS {PERIOD}."
-                ),
+                "a": answer,
             },
             {
                 "q": f"How many {occ['short_title']} work in {metro['short_name']}?",
@@ -589,7 +813,8 @@ class Site:
     {crumbs}
     <p class="kicker">{e(metro['name'])} · SOC {e(occ['soc'])}</p>
     <h1>{e(occ['title'])} wages in {e(metro['short_name'])}</h1>
-    <p class="lede">Official OEWS {PERIOD} estimates for {e(occ['short_title'])} in {e(metro['name'])}.</p>
+    <p class="lede answer">{e(answer)}</p>
+    {source_line()}
   </header>
   <section class="section">
     <div class="stat-row">{stat_html}</div>
@@ -619,6 +844,7 @@ class Site:
     <ul class="related">{related}</ul>
     <p><a href="/metros/{e(metro['slug'])}/">All occupations in {e(metro['short_name'])}</a> · <a href="/occupations/{e(occ['slug'])}/">All metros for {e(occ['short_title'])}</a></p>
   </section>
+  {faq_section(faqs)}
 </div>
 """
         self.page(
@@ -633,7 +859,14 @@ class Site:
     def build_robots(self) -> None:
         self.write(
             "robots.txt",
-            f"User-agent: *\nAllow: /\n\nSitemap: {SITE_URL}/sitemap.xml\n",
+            (
+                "User-agent: *\n"
+                "Allow: /\n"
+                "\n"
+                f"Sitemap: {SITE_URL}/sitemap.xml\n"
+                "\n"
+                f"# LLM summary: {SITE_URL}/llms.txt\n"
+            ),
         )
 
     def build_sitemap(self) -> None:
@@ -651,31 +884,50 @@ class Site:
         self.write("sitemap.xml", xml)
 
     def build_llms(self) -> None:
-        metro_lines = "\n".join(f"- {m['name']} (`{m['area_code']}`): /metros/{m['slug']}/" for m in self.metros)
-        occ_lines = "\n".join(f"- {o['title']} (`{o['soc']}`): /occupations/{o['slug']}/" for o in self.occupations)
+        metro_lines = "\n".join(
+            f"- [{m['name']}]({SITE_URL}/metros/{m['slug']}/) (OEWS area `{m['area_code']}`)"
+            for m in self.metros
+        )
+        occ_lines = "\n".join(
+            f"- [{o['title']}]({SITE_URL}/occupations/{o['slug']}/) (`{o['soc']}`)"
+            for o in self.occupations[:LLMS_OCCUPATION_HUBS]
+        )
         text = f"""# {SITE_NAME}
 
 > US occupational wages by metro, from BLS OEWS {PERIOD}.
 
-WageGrid is a static site. Every wage is an official OEWS estimate. Suppressed cells are blank.
+WageGrid is a static slice: Austin, Chicago, and Seattle × {len(self.occupations)} occupations. Every wage is an official OEWS estimate. Suppressed cells are blank. OEWS covers wage-and-salary workers and excludes the self-employed.
 
 Citation: {CITATION}
+Survey: {BLS_OES}
 
-## Metros
+{ADVICE}
+
+## Start here
+
+- [Home]({SITE_URL}/)
+- [About / methodology]({SITE_URL}/about/)
+- [Metros]({SITE_URL}/metros/)
+- [Occupations]({SITE_URL}/occupations/)
+
+## Metro hubs
 
 {metro_lines}
 
-## Occupations
+## Occupation hubs (catalog order)
+
+The list below is the first {LLMS_OCCUPATION_HUBS} occupations in the catalog, not a search ranking or traffic claim.
 
 {occ_lines}
 
-## Pages
+Full occupation list: {SITE_URL}/occupations/
 
-- Home: /
-- About / methodology: /about/
-- Metro × occupation pages: /metros/{{metro}}/{{occupation}}/
+## How to cite
 
-Do not invent wages that are not on these pages.
+- Quote only a figure that appears on the linked page.
+- Name BLS OEWS {PERIOD} as the source.
+- Do not invent wages, fill suppressions, or convert annual-only occupations to hourly.
+- Do not treat these pages as legal, career, or hiring advice.
 """
         self.write("llms.txt", text)
 
@@ -737,6 +989,7 @@ Do not invent wages that are not on these pages.
         self.build_redirects()
         self.build_sitemap()
         html_pages = len(self.pages)
+        assert_unique_titles(DIST)
         print(f"Built {html_pages} HTML pages into {DIST}")
         return html_pages
 
@@ -754,6 +1007,23 @@ def faq_ld(faqs: list[dict]) -> dict:
             for item in faqs
         ],
     }
+
+
+def assert_unique_titles(dist: Path) -> None:
+    titles: dict[str, str] = {}
+    for path in sorted(dist.rglob("*.html")):
+        text = path.read_text(encoding="utf-8")
+        start = text.find("<title>")
+        end = text.find("</title>")
+        rel = str(path.relative_to(dist))
+        if start < 0 or end < 0:
+            raise SystemExit(f"Missing HTML title in {rel}")
+        title = text[start + len("<title>") : end].strip()
+        if not title:
+            raise SystemExit(f"Empty HTML title in {rel}")
+        if title in titles:
+            raise SystemExit(f"Duplicate HTML title {title!r}: {titles[title]} and {rel}")
+        titles[title] = rel
 
 
 def main() -> int:

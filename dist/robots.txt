@@ -2,3 +2,5 @@ User-agent: *
 Allow: /
 
 Sitemap: https://wagegrid.pages.dev/sitemap.xml
+
+# LLM summary: https://wagegrid.pages.dev/llms.txt
