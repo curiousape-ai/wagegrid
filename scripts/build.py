@@ -678,12 +678,8 @@ class Site:
         answer = self.occupation_answer(occ)
         faqs = [
             {
-                "q": f"Which WageGrid metro pays {occ['short_title']} the most?",
-                "a": (
-                    f"{winner['name']} has the highest published OEWS {PERIOD} annual median for {occ['title']} among Austin, Chicago, and Seattle."
-                    if winner
-                    else f"OEWS {PERIOD} does not publish enough annual wages to rank {occ['title']} across these metros."
-                ),
+                "q": f"Which WageGrid metro has the highest published {occ['short_title']} annual median?",
+                "a": answer,
             },
             {
                 "q": f"Does OEWS publish hourly pay for {occ['short_title']}?",
@@ -693,6 +689,7 @@ class Site:
                     else f"When BLS publishes hourly mean or median for {occ['title']}, WageGrid shows them. Suppressed cells stay blank."
                 ),
             },
+            advice_faq(),
         ]
         body = f"""
 <div class="wrap">
