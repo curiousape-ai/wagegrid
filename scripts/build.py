@@ -12,6 +12,7 @@ from datetime import date
 from pathlib import Path
 
 from offer import (
+    PENDING_NOTE,
     PRICE_LABEL,
     SAMPLE_METRO_SLUG,
     SAMPLE_OCC_SLUG,
@@ -253,6 +254,7 @@ class Site:
   <section class="section">
     <h2>How to read a page</h2>
     <p>Each metro × occupation page shows employment, mean and median wages, and the location quotient from OEWS {PERIOD}. Hourly figures are omitted when BLS publishes the occupation annual-only (common for teachers). Compare the same job across the three metros, or switch occupations inside one metro.</p>
+    <p>A print-ready PDF of one metro and occupation is {PRICE_LABEL} one-time. <a href="/tools/export/">Wage card PDFs</a>. The figures on these pages stay free to read.</p>
     {self.ad_slot()}
   </section>
 </div>
@@ -284,6 +286,12 @@ class Site:
     <p>OEWS estimates wages and employment for wage-and-salary workers. They exclude self-employed workers. Means and medians are survey estimates, not job-posting averages. Location quotient is the metro concentration of the occupation relative to the national mix.</p>
     <p>BLS suppresses some cells for quality or confidentiality. WageGrid leaves those cells blank. Do not treat a dash as zero.</p>
     <p>Some occupations, especially teachers, are published annual-only. When hourly mean and median are both unpublished, pages show annual wages only.</p>
+  </section>
+  <section class="section">
+    <h2>Paid PDF</h2>
+    <p>Each metro and occupation page can unlock a one-page print-ready wage card for {PRICE_LABEL} one-time. The card repeats the official OEWS {PERIOD} estimates already shown in HTML: mean, median, and percentiles only when the seed publishes them. Suppressed cells stay blank. <a href="/tools/export/">Export</a> lists every card. <a href="{SAMPLE_PDF_HREF}">One sample</a> (software developers in Austin) is free and contains no checkout link.</p>
+    <p>Checkout stays off until a Stripe Payment Link is configured. Until then the page says {PENDING_NOTE} and does not include a buy link. The HTML wages stay readable either way.</p>
+    <p>Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.</p>
   </section>
   <section class="section">
     <h2>Ads</h2>
@@ -742,7 +750,15 @@ Citation: {CITATION}
 
 - Home: /
 - About / methodology: /about/
-- Metro × occupation pages: /metros/{{metro}}/{{occupation}}/
+- Metro and occupation pages: /metros/{{metro}}/{{occupation}}/
+- PDF export: /tools/export/
+- Free sample PDF (Austin, software developers): {SAMPLE_PDF_HREF}
+
+## PDF wage card
+
+One metro and one occupation, {PRICE_LABEL} one-time. HTML pages stay free. Mean, median, and percentiles only when the seed publishes them. Suppressed cells stay blank. Checkout is omitted until a real Stripe Payment Link is configured. Do not invent a checkout URL.
+
+Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.
 
 Do not invent wages that are not on these pages.
 """
