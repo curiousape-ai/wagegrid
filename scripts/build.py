@@ -7,8 +7,23 @@ import html
 import json
 import os
 import shutil
+import sys
 from datetime import date
 from pathlib import Path
+
+from offer import (
+    PENDING_NOTE,
+    PRICE_LABEL,
+    SAMPLE_METRO_SLUG,
+    SAMPLE_OCC_SLUG,
+    SAMPLE_PDF_HREF,
+    SAMPLE_PDF_REL,
+    is_sample_pair,
+    render_checkout_status,
+    render_pdf_offer,
+)
+from pdf_card import render_wage_card
+from stripe_link import PLACEHOLDER, StripeLinkError, resolve_stripe_payment_link
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "catalog"
@@ -85,7 +100,7 @@ def annual_only(occ: dict, row: dict) -> bool:
 
 
 class Site:
-    def __init__(self) -> None:
+    def __init__(self, dist: Path | None = None, payment_link: str | None = None) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
         self.occupations = load_json(CATALOG / "occupations.json")["occupations"]
         seed = load_json(DATA / "oews-may2025-seed.json")
@@ -95,6 +110,8 @@ class Site:
         self.occ_by_slug = {o["slug"]: o for o in self.occupations}
         self.pages: list[str] = []
         self.today = date.today().isoformat()
+        self.dist = Path(dist) if dist is not None else DIST
+        self.payment_link = resolve_stripe_payment_link(payment_link)
 
     def row(self, metro: dict, occ: dict) -> dict:
         return self.rows[(metro["area_code"], occ["soc"])]
@@ -108,7 +125,7 @@ class Site:
         return found[:4]
 
     def write(self, rel: str, content: str) -> None:
-        path = DIST / rel
+        path = self.dist / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         if rel.endswith(".html"):
@@ -131,6 +148,7 @@ class Site:
             ("/", "Home", "home"),
             ("/metros/", "Metros", "metros"),
             ("/occupations/", "Occupations", "occupations"),
+            ("/tools/export/", "Export", "export"),
             ("/about/", "About", "about"),
         ):
             cur = ' aria-current="page"' if crumbs_current == key else ""
@@ -236,6 +254,7 @@ class Site:
   <section class="section">
     <h2>How to read a page</h2>
     <p>Each metro × occupation page shows employment, mean and median wages, and the location quotient from OEWS {PERIOD}. Hourly figures are omitted when BLS publishes the occupation annual-only (common for teachers). Compare the same job across the three metros, or switch occupations inside one metro.</p>
+    <p>A print-ready PDF of one metro and occupation is {PRICE_LABEL} one-time. <a href="/tools/export/">Wage card PDFs</a>. The figures on these pages stay free to read.</p>
     {self.ad_slot()}
   </section>
 </div>
@@ -269,6 +288,12 @@ class Site:
     <p>Some occupations, especially teachers, are published annual-only. When hourly mean and median are both unpublished, pages show annual wages only.</p>
   </section>
   <section class="section">
+    <h2>Paid PDF</h2>
+    <p>Each metro and occupation page can unlock a one-page print-ready wage card for {PRICE_LABEL} one-time. The card repeats the official OEWS {PERIOD} estimates already shown in HTML: mean, median, and percentiles only when the seed publishes them. Suppressed cells stay blank. <a href="/tools/export/">Export</a> lists every card. <a href="{SAMPLE_PDF_HREF}">One sample</a> (software developers in Austin) is free and contains no checkout link.</p>
+    <p>Checkout stays off until a Stripe Payment Link is configured. Until then the page says {PENDING_NOTE} and does not include a buy link. The HTML wages stay readable either way.</p>
+    <p>Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.</p>
+  </section>
+  <section class="section">
     <h2>Ads</h2>
     <p>Pages include an empty AdSense slot. No ad script ships until a publisher ID is added.</p>
   </section>
@@ -281,6 +306,49 @@ class Site:
             "about/index.html",
             f"{SITE_URL}/about/",
             current="about",
+        )
+
+    def build_export(self) -> None:
+        items = []
+        for metro in self.metros:
+            for occ in self.occupations:
+                href = f"/metros/{metro['slug']}/{occ['slug']}/"
+                extra = ""
+                if is_sample_pair(metro["slug"], occ["slug"]):
+                    extra = f' · <a href="{SAMPLE_PDF_HREF}">Free sample PDF</a>'
+                items.append(
+                    f'<li><a href="{e(href)}">{e(occ["short_title"])} in {e(metro["short_name"])}</a>{extra}</li>'
+                )
+        crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/tools/export/", "Export")])
+        body = f"""
+<div class="wrap">
+  <header class="page-head">
+    {crumbs}
+    <p class="kicker">One-off PDF · {PRICE_LABEL}</p>
+    <h1>Print-ready wage card</h1>
+    <p class="lede">A one-page PDF of one metro and one occupation. Official OEWS {PERIOD} estimates only. The HTML wage pages stay free.</p>
+  </header>
+  <section class="section">
+    <p class="offer-price">{PRICE_LABEL} <span>one-time</span></p>
+    {render_checkout_status(self.payment_link)}
+    <p><a href="{SAMPLE_PDF_HREF}">Free sample PDF</a>: software developers in Austin. The sample file has no checkout link.</p>
+    <p class="offer-disclaimer">Estimates. If a card and the Bureau of Labor Statistics disagree, BLS prevails. Not career, legal, or pay-setting advice. WageGrid is not affiliated with BLS or the U.S. Department of Labor. Suppressed cells stay blank.</p>
+    <p class="offer-kill">Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.</p>
+  </section>
+  <section class="section">
+    <h2>Cards</h2>
+    <ul class="export-list">{"".join(items)}</ul>
+  </section>
+</div>
+"""
+        self.page(
+            f"Wage card PDF — {SITE_NAME}",
+            body,
+            f"One-page OEWS {PERIOD} wage card PDF for one metro and occupation. {PRICE_LABEL} one-time. HTML pages stay free.",
+            "tools/export/index.html",
+            f"{SITE_URL}/tools/export/",
+            current="export",
+            json_ld=[crumb_ld],
         )
 
     def build_metro_index(self) -> None:
@@ -583,6 +651,14 @@ class Site:
                 "a": "BLS withholds some OEWS estimates for quality or confidentiality. WageGrid does not fill those cells.",
             },
         ]
+        offer = render_pdf_offer(
+            metro_name=metro["name"],
+            metro_short=metro["short_name"],
+            metro_slug=metro["slug"],
+            occ_title=occ["title"],
+            occ_slug=occ["slug"],
+            payment_link=self.payment_link,
+        )
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -597,6 +673,7 @@ class Site:
       <p>{e(CITATION)} Employment per 1,000 jobs: {ratio(obs.get('employment_per_1000'))}.</p>
       {teacher_note}
     </div>
+    {offer}
     {self.ad_slot()}
   </section>
   <section class="section">
@@ -673,7 +750,15 @@ Citation: {CITATION}
 
 - Home: /
 - About / methodology: /about/
-- Metro × occupation pages: /metros/{{metro}}/{{occupation}}/
+- Metro and occupation pages: /metros/{{metro}}/{{occupation}}/
+- PDF export: /tools/export/
+- Free sample PDF (Austin, software developers): {SAMPLE_PDF_HREF}
+
+## PDF wage card
+
+One metro and one occupation, {PRICE_LABEL} one-time. HTML pages stay free. Mean, median, and percentiles only when the seed publishes them. Suppressed cells stay blank. Checkout is omitted until a real Stripe Payment Link is configured. Do not invent a checkout URL.
+
+Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.
 
 Do not invent wages that are not on these pages.
 """
@@ -711,18 +796,27 @@ Do not invent wages that are not on these pages.
         self.write("_redirects", "\n".join(lines) + "\n")
 
     def copy_static(self) -> None:
-        dest = DIST / "static"
+        dest = self.dist / "static"
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(SRC_STATIC, dest)
 
+    def write_sample_pdf(self) -> None:
+        metro = self.metro_by_slug[SAMPLE_METRO_SLUG]
+        occ = self.occ_by_slug[SAMPLE_OCC_SLUG]
+        pdf = render_wage_card(metro, occ, self.row(metro, occ))
+        path = self.dist / SAMPLE_PDF_REL
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(pdf)
+
     def build(self) -> int:
-        if DIST.exists():
-            shutil.rmtree(DIST)
-        DIST.mkdir(parents=True)
+        if self.dist.exists():
+            shutil.rmtree(self.dist)
+        self.dist.mkdir(parents=True)
         self.copy_static()
         self.build_home()
         self.build_about()
+        self.build_export()
         self.build_metro_index()
         self.build_occ_index()
         for metro in self.metros:
@@ -732,12 +826,18 @@ Do not invent wages that are not on these pages.
         for metro in self.metros:
             for occ in self.occupations:
                 self.build_pair(metro, occ)
+        self.write_sample_pdf()
         self.build_robots()
         self.build_llms()
         self.build_redirects()
         self.build_sitemap()
+        try:
+            reject_stripe_placeholder(self.dist)
+        except StripeLinkError:
+            shutil.rmtree(self.dist, ignore_errors=True)
+            raise
         html_pages = len(self.pages)
-        print(f"Built {html_pages} HTML pages into {DIST}")
+        print(f"Built {html_pages} HTML pages into {self.dist}")
         return html_pages
 
 
@@ -756,9 +856,31 @@ def faq_ld(faqs: list[dict]) -> dict:
     }
 
 
+def reject_stripe_placeholder(root: Path) -> None:
+    markers = (
+        PLACEHOLDER.encode("ascii"),
+        b'href="{{',
+        b"href='{{",
+    )
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        data = path.read_bytes()
+        if any(marker in data for marker in markers):
+            raise StripeLinkError("refusing to publish a Stripe placeholder")
+
+
 def main() -> int:
-    site = Site()
-    site.build()
+    try:
+        link = resolve_stripe_payment_link(os.environ.get("STRIPE_PAYMENT_LINK"))
+    except StripeLinkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    try:
+        Site(payment_link=link).build()
+    except StripeLinkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
