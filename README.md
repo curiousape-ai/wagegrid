@@ -34,7 +34,7 @@ WAGEGRID_SITE_URL=https://your.domain python3 scripts/build.py
 python3 scripts/fetch_oews.py --api-key "$BLS_API_KEY"
 ```
 
-`WAGEGRID_SITE_URL` defaults to `https://wagegrid.pages.dev`. An unset URL does not fall back to localhost.
+`WAGEGRID_SITE_URL` defaults to `https://wagegrid.pages.dev` when it is unset.
 
 Build writes `dist/`: home, about, metro indexes, occupation comparisons, 75 metro × occupation pages, the PDF export page, one free sample PDF, sitemap, `robots.txt` (`Allow: /`), `llms.txt`, FAQ JSON-LD, related links, and Cloudflare `_redirects` for slug aliases.
 
