@@ -11,7 +11,16 @@ import sys
 from datetime import date
 from pathlib import Path
 
-from offer import SAMPLE_OCC_SLUG, SAMPLE_METRO_SLUG, SAMPLE_PDF_REL, render_pdf_offer
+from offer import (
+    PRICE_LABEL,
+    SAMPLE_METRO_SLUG,
+    SAMPLE_OCC_SLUG,
+    SAMPLE_PDF_HREF,
+    SAMPLE_PDF_REL,
+    is_sample_pair,
+    render_checkout_status,
+    render_pdf_offer,
+)
 from pdf_card import render_wage_card
 from stripe_link import PLACEHOLDER, StripeLinkError, resolve_stripe_payment_link
 
@@ -138,6 +147,7 @@ class Site:
             ("/", "Home", "home"),
             ("/metros/", "Metros", "metros"),
             ("/occupations/", "Occupations", "occupations"),
+            ("/tools/export/", "Export", "export"),
             ("/about/", "About", "about"),
         ):
             cur = ' aria-current="page"' if crumbs_current == key else ""
@@ -288,6 +298,49 @@ class Site:
             "about/index.html",
             f"{SITE_URL}/about/",
             current="about",
+        )
+
+    def build_export(self) -> None:
+        items = []
+        for metro in self.metros:
+            for occ in self.occupations:
+                href = f"/metros/{metro['slug']}/{occ['slug']}/"
+                extra = ""
+                if is_sample_pair(metro["slug"], occ["slug"]):
+                    extra = f' · <a href="{SAMPLE_PDF_HREF}">Free sample PDF</a>'
+                items.append(
+                    f'<li><a href="{e(href)}">{e(occ["short_title"])} in {e(metro["short_name"])}</a>{extra}</li>'
+                )
+        crumbs, crumb_ld = self.crumbs([("/", "Home"), ("/tools/export/", "Export")])
+        body = f"""
+<div class="wrap">
+  <header class="page-head">
+    {crumbs}
+    <p class="kicker">One-off PDF · {PRICE_LABEL}</p>
+    <h1>Print-ready wage card</h1>
+    <p class="lede">A one-page PDF of one metro and one occupation. Official OEWS {PERIOD} estimates only. The HTML wage pages stay free.</p>
+  </header>
+  <section class="section">
+    <p class="offer-price">{PRICE_LABEL} <span>one-time</span></p>
+    {render_checkout_status(self.payment_link)}
+    <p><a href="{SAMPLE_PDF_HREF}">Free sample PDF</a>: software developers in Austin. The sample file has no checkout link.</p>
+    <p class="offer-disclaimer">Estimates. If a card and the Bureau of Labor Statistics disagree, BLS prevails. Not career, legal, or pay-setting advice. WageGrid is not affiliated with BLS or the U.S. Department of Labor. Suppressed cells stay blank.</p>
+    <p class="offer-kill">Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.</p>
+  </section>
+  <section class="section">
+    <h2>Cards</h2>
+    <ul class="export-list">{"".join(items)}</ul>
+  </section>
+</div>
+"""
+        self.page(
+            f"Wage card PDF — {SITE_NAME}",
+            body,
+            f"One-page OEWS {PERIOD} wage card PDF for one metro and occupation. {PRICE_LABEL} one-time. HTML pages stay free.",
+            "tools/export/index.html",
+            f"{SITE_URL}/tools/export/",
+            current="export",
+            json_ld=[crumb_ld],
         )
 
     def build_metro_index(self) -> None:
@@ -747,6 +800,7 @@ Do not invent wages that are not on these pages.
         self.copy_static()
         self.build_home()
         self.build_about()
+        self.build_export()
         self.build_metro_index()
         self.build_occ_index()
         for metro in self.metros:

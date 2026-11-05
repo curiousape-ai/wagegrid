@@ -77,6 +77,14 @@ class SiteExportTests(unittest.TestCase):
         self.assertNotIn("localhost", build.SITE_URL)
         self.assertNotIn("0.0.0.0", build.SITE_URL)
         self.assertIn(build.SITE_URL, sitemap)
+        export = files["tools/export/index.html"].decode("utf-8")
+        self.assertIn(offer.PENDING_NOTE, export)
+        self.assertIn(offer.PRICE_LABEL, export)
+        self.assertIn(f'href="{offer.SAMPLE_PDF_HREF}"', export)
+        self.assertIn("at least one paid PDF", export)
+        self.assertIn('href="/tools/export/"', files["index.html"].decode("utf-8"))
+        self.assertEqual(export.count("<li>"), 75)
+        self.assertNotIn("buy.stripe.com", export)
 
     def test_placeholder_is_treated_as_unset(self) -> None:
         dest = self._build(_token())
@@ -120,6 +128,11 @@ class SiteExportTests(unittest.TestCase):
             self.assertEqual(files[name].count(b"buy.stripe.com"), 1)
         self.assertNotIn(b"buy.stripe.com", files["llms.txt"])
         self.assertNotIn(b"buy.stripe.com", files[offer.SAMPLE_PDF_REL])
+        export = files["tools/export/index.html"]
+        self.assertNotIn(b"buy.stripe.com", export)
+        self.assertNotIn(b"checkout.stripe.com", export)
+        self.assertIn(b"Checkout is on each metro and occupation page.", export)
+        self.assertNotIn(offer.PENDING_NOTE.encode("utf-8"), export)
 
     def test_invalid_link_fails_and_cli_does_not_rewrite_dist(self) -> None:
         dest = Path(tempfile.mkdtemp(prefix="wagegrid-invalid-"))
