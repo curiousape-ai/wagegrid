@@ -44,6 +44,14 @@ Citation: U.S. Bureau of Labor Statistics, Occupational Employment and Wage Stat
 
 - Home: /
 - About / methodology: /about/
-- Metro × occupation pages: /metros/{metro}/{occupation}/
+- Metro and occupation pages: /metros/{metro}/{occupation}/
+- PDF export: /tools/export/
+- Free sample PDF (Austin, software developers): /samples/austin-software-developers-oews-may2025.pdf
+
+## PDF wage card
+
+One metro and one occupation, US$19.99 one-time. HTML pages stay free. Mean, median, and percentiles only when the seed publishes them. Suppressed cells stay blank. Checkout is omitted until a real Stripe Payment Link is configured. Do not invent a checkout URL.
+
+Kill rule: 14 days after the first indexable public offer, the deciding number is at least one paid PDF. An unpublished draft does not start that clock.
 
 Do not invent wages that are not on these pages.
