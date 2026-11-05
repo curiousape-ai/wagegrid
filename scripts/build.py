@@ -7,8 +7,13 @@ import html
 import json
 import os
 import shutil
+import sys
 from datetime import date
 from pathlib import Path
+
+from offer import SAMPLE_OCC_SLUG, SAMPLE_METRO_SLUG, SAMPLE_PDF_REL, render_pdf_offer
+from pdf_card import render_wage_card
+from stripe_link import PLACEHOLDER, StripeLinkError, resolve_stripe_payment_link
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "catalog"
@@ -85,7 +90,7 @@ def annual_only(occ: dict, row: dict) -> bool:
 
 
 class Site:
-    def __init__(self) -> None:
+    def __init__(self, dist: Path | None = None, payment_link: str | None = None) -> None:
         self.metros = load_json(CATALOG / "metros.json")["metros"]
         self.occupations = load_json(CATALOG / "occupations.json")["occupations"]
         seed = load_json(DATA / "oews-may2025-seed.json")
@@ -95,6 +100,8 @@ class Site:
         self.occ_by_slug = {o["slug"]: o for o in self.occupations}
         self.pages: list[str] = []
         self.today = date.today().isoformat()
+        self.dist = Path(dist) if dist is not None else DIST
+        self.payment_link = resolve_stripe_payment_link(payment_link)
 
     def row(self, metro: dict, occ: dict) -> dict:
         return self.rows[(metro["area_code"], occ["soc"])]
@@ -108,7 +115,7 @@ class Site:
         return found[:4]
 
     def write(self, rel: str, content: str) -> None:
-        path = DIST / rel
+        path = self.dist / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         if rel.endswith(".html"):
@@ -583,6 +590,14 @@ class Site:
                 "a": "BLS withholds some OEWS estimates for quality or confidentiality. WageGrid does not fill those cells.",
             },
         ]
+        offer = render_pdf_offer(
+            metro_name=metro["name"],
+            metro_short=metro["short_name"],
+            metro_slug=metro["slug"],
+            occ_title=occ["title"],
+            occ_slug=occ["slug"],
+            payment_link=self.payment_link,
+        )
         body = f"""
 <div class="wrap">
   <header class="page-head">
@@ -597,6 +612,7 @@ class Site:
       <p>{e(CITATION)} Employment per 1,000 jobs: {ratio(obs.get('employment_per_1000'))}.</p>
       {teacher_note}
     </div>
+    {offer}
     {self.ad_slot()}
   </section>
   <section class="section">
@@ -711,15 +727,23 @@ Do not invent wages that are not on these pages.
         self.write("_redirects", "\n".join(lines) + "\n")
 
     def copy_static(self) -> None:
-        dest = DIST / "static"
+        dest = self.dist / "static"
         if dest.exists():
             shutil.rmtree(dest)
         shutil.copytree(SRC_STATIC, dest)
 
+    def write_sample_pdf(self) -> None:
+        metro = self.metro_by_slug[SAMPLE_METRO_SLUG]
+        occ = self.occ_by_slug[SAMPLE_OCC_SLUG]
+        pdf = render_wage_card(metro, occ, self.row(metro, occ))
+        path = self.dist / SAMPLE_PDF_REL
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(pdf)
+
     def build(self) -> int:
-        if DIST.exists():
-            shutil.rmtree(DIST)
-        DIST.mkdir(parents=True)
+        if self.dist.exists():
+            shutil.rmtree(self.dist)
+        self.dist.mkdir(parents=True)
         self.copy_static()
         self.build_home()
         self.build_about()
@@ -732,12 +756,18 @@ Do not invent wages that are not on these pages.
         for metro in self.metros:
             for occ in self.occupations:
                 self.build_pair(metro, occ)
+        self.write_sample_pdf()
         self.build_robots()
         self.build_llms()
         self.build_redirects()
         self.build_sitemap()
+        try:
+            reject_stripe_placeholder(self.dist)
+        except StripeLinkError:
+            shutil.rmtree(self.dist, ignore_errors=True)
+            raise
         html_pages = len(self.pages)
-        print(f"Built {html_pages} HTML pages into {DIST}")
+        print(f"Built {html_pages} HTML pages into {self.dist}")
         return html_pages
 
 
@@ -756,9 +786,31 @@ def faq_ld(faqs: list[dict]) -> dict:
     }
 
 
+def reject_stripe_placeholder(root: Path) -> None:
+    markers = (
+        PLACEHOLDER.encode("ascii"),
+        b'href="{{',
+        b"href='{{",
+    )
+    for path in root.rglob("*"):
+        if not path.is_file():
+            continue
+        data = path.read_bytes()
+        if any(marker in data for marker in markers):
+            raise StripeLinkError("refusing to publish a Stripe placeholder")
+
+
 def main() -> int:
-    site = Site()
-    site.build()
+    try:
+        link = resolve_stripe_payment_link(os.environ.get("STRIPE_PAYMENT_LINK"))
+    except StripeLinkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    try:
+        Site(payment_link=link).build()
+    except StripeLinkError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
